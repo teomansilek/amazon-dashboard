@@ -505,31 +505,15 @@
                 <span class="df-badge">DF</span>
             </div>
             <a href="index.html"
-                style="color:white; text-decoration:none; background:rgba(255,255,255,0.1); padding:8px 12px; border-radius:5px; font-size:12px;">🏠
-                Menü</a>
-            <button onclick="showDebugModal()"
-                style="background:rgba(231, 76, 60, 0.2); color:#e74c3c; border:1px solid #e74c3c; padding:8px 12px; border-radius:5px; font-size:12px; cursor:pointer; font-weight:bold;">🛠️
-                Debug</button>
+                style="color:white; text-decoration:none; background:rgba(255,255,255,0.1); padding:8px 12px; border-radius:5px; font-size:12px; font-weight:600;">🏠
+                Anasayfa</a>
         </div>
     </div>
 
     <!-- ... (rest of container) ... -->
 
     <!-- DEBUG MODAL -->
-    <div id="debugModal"
-        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;">
-        <div
-            style="background:#1e2a4a; padding:30px; border-radius:12px; max-width:600px; width:90%; border:2px solid #e74c3c; color:#fff; font-family:monospace;">
-            <h2 style="color:#e74c3c; margin-bottom:20px; border-bottom:1px solid #e74c3c; padding-bottom:10px;">🛠️
-                Debug Bilgileri</h2>
-            <div id="debugContent"
-                style="white-space:pre-wrap; max-height:400px; overflow:auto; font-size:12px; line-height:1.4;"></div>
-            <div style="margin-top:20px; text-align:right;">
-                <button onclick="document.getElementById('debugModal').style.display='none'"
-                    style="background:#e74c3c; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer;">Kapat</button>
-            </div>
-        </div>
-    </div>
+    <!-- DEBUG MODAL REMOVED -->
 
     <script>
         // ... (existing scripts) ... 
@@ -848,12 +832,14 @@
 
         function loadAllData() {
             try {
-                // 1. Load from localStorage
-                const fbaPoRaw = localStorage.getItem('fbaData_poDetails');
-                const dfRaw = localStorage.getItem('dfData_raw');
+                const cleanDate = (str) => {
+                    if (!str) return '?';
+                    // Strip HTML tags and extra whitespace
+                    return str.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+                };
 
-                const fbaDate = localStorage.getItem('fbaData_date') || '?';
-                const dfDate = localStorage.getItem('dfData_date') || '?';
+                const fbaDate = cleanDate(localStorage.getItem('fbaData_date'));
+                const dfDate = cleanDate(localStorage.getItem('dfData_date'));
 
                 document.getElementById('headerDateRange').textContent = `FBA Verisi: ${fbaDate} | DF Verisi: ${dfDate}`;
 

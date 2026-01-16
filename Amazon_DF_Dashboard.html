@@ -519,6 +519,7 @@
             <h1>🚚 Amazon DF (Direct Fulfillment) Siparişleri <span class="df-badge">Direct Fulfillment</span></h1>
         </div>
         <div class="header-controls">
+            <a href="index.html" class="upload-btn" style="text-decoration:none;">🏠 Anasayfa</a>
             <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleFileUpload(event)">
             <button class="upload-btn" onclick="document.getElementById('csvFileInput').click()">📂 CSV Yükle</button>
             <div class="date-range" id="updateDate">Veri Bekleniyor...</div>
@@ -809,8 +810,11 @@
                 complete: function (results) {
                     if (results.data && results.data.length > 0) {
                         try {
-                            processData(results.data);
+                            // First update the date so saveDataToLocalStorage captures the correct date
                             document.getElementById('updateDate').innerHTML = `${new Date().toLocaleDateString('tr-TR')} <span class="update-badge">Yüklendi</span>`;
+
+                            // Then process (which saves to storage)
+                            processData(results.data);
                         } catch (e) {
                             console.error(e);
                             alert("Veri işlenirken hata oluştu: " + e.message);
