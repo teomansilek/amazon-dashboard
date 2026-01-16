@@ -708,7 +708,7 @@
                 <div class="chart-container"><canvas id="compareChart"></canvas></div>
             </div>
             <div class="chart-card">
-                <h3>📦 Kategori Dağılımı (FBA)</h3>
+                <h3>📦 Kategori Dağılımı (FBA + DF)</h3>
                 <div class="chart-container"><canvas id="categoryChart"></canvas></div>
             </div>
         </div>
@@ -1025,6 +1025,10 @@
                 }
 
                 if (!products[key].marka) products[key].marka = detectBrand(row['Ürün Başlığı'] || row['product-name']);
+                // Attempt to get category from DF if exists, or keep existing
+                if (!products[key].kategori || products[key].kategori === 'Diğer') {
+                    products[key].kategori = row['Category'] || row['kategori'] || products[key].kategori || 'Diğer';
+                }
             });
 
             // --- AGGREGATE ---
