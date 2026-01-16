@@ -5,6 +5,8 @@ echo   AMAZON DASHBOARD GUNCELLEME SERVISI
 echo ==========================================
 echo.
 
+set "LOGFILE=%CD%\debug_log.txt"
+
 (
     echo BASLANGIC ZAMANI: %DATE% %TIME%
     cd /d "c:\Users\NEKO\.gemini\antigravity\scratch\amazon_dashboard"
@@ -25,9 +27,9 @@ echo.
     echo.
     echo Adim 3: Sunucuya Gonderiliyor...
     git push origin main
-) > debug_log.txt 2>&1
+) > "%LOGFILE%" 2>&1
 
-type debug_log.txt
+type "%LOGFILE%"
 
 if %errorlevel% neq 0 (
     echo.
