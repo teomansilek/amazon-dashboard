@@ -759,15 +759,69 @@
             updateTables();
         }
 
-        function initializeDashboard() {
+        async function initializeDashboard() {
             if (loadDataFromLocalStorage()) {
                 console.log("Data loaded from LocalStorage");
                 updateDashboardUI();
                 updateInvoiceChart();
                 updateInvoiceTable();
             } else {
-                console.log("No saved data found, starting empty.");
-                updateDashboardUI(); // Initializes empty charts
+                console.log("No saved data found, checking for default data...");
+                try {
+                    // Show loading state
+                    const updateDateEl = document.getElementById('updateDate');
+                    if (updateDateEl) updateDateEl.textContent = "Veriler Yükleniyor...";
+
+                    const [ordersRes, invoicesRes] = await Promise.all([
+                        fetch('/data/fba_orders.json'),
+                        fetch('/data/fba_invoices.json')
+                    ]);
+
+                    if (ordersRes.ok && invoicesRes.ok) {
+                        const ordersData = await ordersRes.json();
+                        const invoicesData = await invoicesRes.json();
+
+                        console.log("Default data found, loading...", ordersData.length, "orders", invoicesData.length, "invoices");
+
+                        // Reset metrics
+                        metrics = {
+                            total_items: 0,
+                            unique_asins: new Set(),
+                            talep_miktar: 0,
+                            kabul_miktar: 0,
+                            alinan_miktar: 0,
+                            kayip_miktar: 0,
+                            talep_tutar: 0,
+                            kabul_tutar: 0,
+                            alinan_tutar: 0,
+                            kayip_tutar: 0
+                        };
+                        poDetails = {};
+                        poMap = {};
+                        brandMap = {};
+                        warehouseMap = {};
+                        monthlyMap = {};
+                        productStats = {};
+
+                        processOrderData(ordersData);
+                        processInvoiceData(invoicesData);
+
+                        updateDashboardUI();
+                        updateInvoiceChart();
+                        updateInvoiceTable();
+
+                        if (updateDateEl) {
+                            updateDateEl.textContent = "Demo Modu: Varsayılan Veriler Yüklendi";
+                            updateDateEl.style.color = "#e67e22"; // Orange to indicate demo mode
+                        }
+                    } else {
+                        console.log("No default data found, starting empty.");
+                        updateDashboardUI();
+                    }
+                } catch (e) {
+                    console.error("Error loading default data:", e);
+                    updateDashboardUI();
+                }
             }
         }
 
