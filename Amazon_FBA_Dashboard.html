@@ -845,7 +845,13 @@
                     }
                     if (savedDate) {
                         const dateEl = document.getElementById('updateDate');
-                        if (dateEl) dateEl.textContent = savedDate;
+                        if (dateEl) {
+                            if (!savedDate.includes("İşleniyor") && !savedDate.includes("Bekleniyor")) {
+                                dateEl.textContent = savedDate;
+                            } else {
+                                dateEl.textContent = "13.01.2026";
+                            }
+                        }
                     }
                     return true;
                 }

@@ -529,7 +529,7 @@
             <a href="index.html" class="upload-btn" style="text-decoration:none;">🏠 Anasayfa</a>
             <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleFileUpload(event)">
             <button class="upload-btn" onclick="document.getElementById('csvFileInput').click()">📂 CSV Yükle</button>
-            <div class="date-range" id="updateDate">13.01.2026 <span class="update-badge">Yüklendi</span></div>
+            <div class="date-range" id="updateDate">13.01.2026</div>
         </div>
     </div>
 
@@ -798,7 +798,7 @@
                                 document.getElementById('updateDate').innerHTML = savedDate;
                             } else {
                                 // Fallback to current date if saved date was invalid/loading state
-                                document.getElementById('updateDate').innerHTML = `${new Date().toLocaleDateString('tr-TR')} <span class="update-badge">Yüklendi</span>`;
+                                document.getElementById('updateDate').innerHTML = new Date().toLocaleDateString('tr-TR');
                             }
                         }
                         return true;
@@ -825,7 +825,7 @@
                     if (results.data && results.data.length > 0) {
                         try {
                             // First update the date so saveDataToLocalStorage captures the correct date
-                            document.getElementById('updateDate').innerHTML = `${new Date().toLocaleDateString('tr-TR')} <span class="update-badge">Yüklendi</span>`;
+                            document.getElementById('updateDate').innerHTML = new Date().toLocaleDateString('tr-TR');
 
                             // Then process (which saves to storage)
                             processData(results.data);

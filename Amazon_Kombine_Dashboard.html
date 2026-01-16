@@ -515,7 +515,7 @@
     <div class="header">
         <div>
             <h1 onclick="window.location.href='index.html'">📊 Amazon Kombine Analiz - FBA + DF</h1>
-            <div class="date-range" id="headerDateRange">Veri Bekleniyor...</div>
+            <div class="date-range" id="headerDateRange">13.01.2026</div>
         </div>
         <div class="header-right">
             <select class="global-dropdown" id="globalModeSelect" onchange="changeGlobalMode()">
@@ -864,8 +864,12 @@
                 const fbaPoRaw = localStorage.getItem('fbaData_poDetails');
                 const dfRaw = localStorage.getItem('dfData_raw');
 
-                const fbaDate = cleanDate(localStorage.getItem('fbaData_date'));
-                const dfDate = cleanDate(localStorage.getItem('dfData_date'));
+                let fbaDate = cleanDate(localStorage.getItem('fbaData_date'));
+                let dfDate = cleanDate(localStorage.getItem('dfData_date'));
+
+                // Filter out invalid/loading states
+                if (fbaDate.includes("Bekleniyor") || fbaDate.includes("İşleniyor")) fbaDate = "13.01.2026";
+                if (dfDate.includes("Bekleniyor") || dfDate.includes("İşleniyor")) dfDate = "13.01.2026";
 
                 document.getElementById('headerDateRange').textContent = `FBA Verisi: ${fbaDate} | DF Verisi: ${dfDate}`;
 
