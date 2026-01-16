@@ -29,6 +29,29 @@
             box-shadow: 0 4px 20px rgba(142, 68, 173, 0.4);
         }
 
+        .menu-link {
+            text-decoration: none;
+            color: #9b59b6;
+            font-weight: 600;
+            background: rgba(142, 68, 173, 0.2);
+            border: 1px solid rgba(142, 68, 173, 0.5);
+            padding: 8px 16px;
+            /* Standardized Size */
+            border-radius: 6px;
+            font-size: 14px;
+            /* Standardized Font Size */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .menu-link:hover {
+            background: rgba(142, 68, 173, 0.3);
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
         .header h1 {
             color: #fff;
             font-size: 24px;
@@ -924,6 +947,7 @@
                 // Robust parsing for FBA keys found in debug
                 const p_talep = parseInt(item.talep || item['Talep edilen miktar'] || 0);
                 const p_kabul = parseInt(item.kabul || item['Kabul edilen miktar'] || 0);
+                const p_alinan = parseInt(item.alinan || item['Alınan adet'] || 0);
 
                 const p_birim = parseMoney(item.birim_fiyat || item['Birim Maliyet']);
                 const p_kabul_tutar = parseMoney(item.kabul_tutar || item['Kabul edilen toplam maliyet']);
@@ -932,8 +956,8 @@
                     qty = p_talep;
                     rev = qty * p_birim; // Revenue estimate
                 } else if (mode === 'alinan') {
-                    qty = p_kabul;
-                    rev = p_kabul_tutar;
+                    qty = p_alinan;
+                    rev = qty * p_birim;
                 } else if (mode === 'kayip') {
                     qty = Math.max(0, p_talep - p_kabul);
                     rev = qty * p_birim;

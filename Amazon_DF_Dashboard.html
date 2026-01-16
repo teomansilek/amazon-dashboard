@@ -839,14 +839,14 @@
             orderDetails = {};
 
             // Save raw data to storage if it's a new upload
+            // Date updating is now handled at the END of this function using maxDate from data.
+            /* 
             if (!fromStorage) {
-                const dateStr = new Date().toLocaleDateString('tr-TR');
-                const updateDateEl = document.getElementById('updateDate');
-                if (updateDateEl) {
-                    updateDateEl.innerHTML = `${dateStr} <span class="update-badge">Yüklendi</span>`;
-                }
-                saveDataToLocalStorage(rawData);
+               // ... removed ...
             }
+            */
+
+            let maxDate = null;
 
             // Temporary storage for aggregation
             const orderMap = new Map();
