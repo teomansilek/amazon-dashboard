@@ -424,26 +424,26 @@
 
 
         .upload-btn {
-            background: rgba(255, 153, 0, 0.2);
-            border: 1px solid rgba(255, 153, 0, 0.5);
-            color: #ff9900;
+            background: linear-gradient(145deg, #5b21b6, #7c3aed);
+            border: 2px solid #8b5cf6;
+            color: #fff;
             padding: 8px 16px;
-            /* Standardized Size */
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
-            /* Standardized Font Size */
             font-weight: 600;
             transition: all 0.3s;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
         }
 
         .upload-btn:hover {
-            background: rgba(255, 153, 0, 0.3);
-            transform: translateY(-1px);
+            background: linear-gradient(145deg, #6d28d9, #8b5cf6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.5);
         }
 
 
@@ -756,9 +756,7 @@
             } else {
                 console.log("No saved data found, checking for default data...");
                 try {
-                    // Show loading state
-                    const updateDateEl = document.getElementById('updateDate');
-                    if (updateDateEl) updateDateEl.textContent = "Veriler Yükleniyor...";
+                    // Removed loading state message
 
                     const [ordersRes, invoicesRes] = await Promise.all([
                         fetch('/data/fba_orders.json'),

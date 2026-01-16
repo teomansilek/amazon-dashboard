@@ -1,6 +1,15 @@
-BASLANGIC ZAMANI: Cum 16.01.2026 15:05:57,90
+BASLANGIC ZAMANI: Cum 16.01.2026 16:33:41,23
 Calisma Dizini: c:\Users\NEKO\.gemini\antigravity\scratch\amazon_dashboard
 
 Adim 1: Yeni dosyalar isleniyor...
 Kaynak: C:\Users\NEKO\Desktop\Amazon Siparişler\
+
+Processing FBA Orders: C:\Users\NEKO\Desktop\Amazon Siparişler\Amazon FBA Orders_2026-01-16.xls
+Saved 2482 FBA orders to fba_orders.json
+Processing FBA Invoices: C:\Users\NEKO\Desktop\Amazon Siparişler\Amazon FBA Invoices_2026-01-16.csv
+Saved 64 FBA invoices to fba_invoices.json
+Processing DF Orders: C:\Users\NEKO\Desktop\Amazon Siparişler\Amazon DF Orders_2026-01-16.csv
+Saved 2261 DF orders to df_orders.json
+
+Adim 2: GitHub Veritabani Guncelleniyor...
 
