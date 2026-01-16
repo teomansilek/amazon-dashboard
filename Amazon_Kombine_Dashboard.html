@@ -1029,6 +1029,11 @@
                 if (!products[key].kategori || products[key].kategori === 'Diğer') {
                     products[key].kategori = row['Category'] || row['kategori'] || products[key].kategori || 'Diğer';
                 }
+
+                // Final fallback: Detect from product name
+                if (!products[key].kategori || products[key].kategori === 'Diğer') {
+                    products[key].kategori = detectCategory(row['Ürün Başlığı'] || row['product-name']);
+                }
             });
 
             // --- AGGREGATE ---
@@ -1100,6 +1105,21 @@
             for (const b of BRANDS) {
                 if (upper.includes(b)) return b;
             }
+            return 'Diğer';
+        }
+
+        function detectCategory(name) {
+            if (!name) return 'Diğer';
+            const n = name.toUpperCase();
+            if (n.includes('YAĞ') || n.includes('OIL') || n.includes('LITRE') || n.includes('5W-30') || n.includes('5W-40') || n.includes('10W-40')) return 'Motor Yağı';
+            if (n.includes('SİLECEK') || n.includes('WIPER') || n.includes('AEROTWIN')) return 'Silecek';
+            if (n.includes('AMPUL') || n.includes('FAR') || n.includes('XENON') || n.includes('LED') || n.includes('H7') || n.includes('H4') || n.includes('H1')) return 'Aydınlatma';
+            if (n.includes('AKÜ') || n.includes('BATTERY') || n.includes('ŞARJ') || n.includes('TAKVIYE')) return 'Akü & Takviye';
+            if (n.includes('FREN') || n.includes('BALATA') || n.includes('DISK')) return 'Fren Sistemi';
+            if (n.includes('FILTRE') || n.includes('FILTER')) return 'Filtre';
+            if (n.includes('KATKI') || n.includes('TEMIZLE') || n.includes('CLEANER') || n.includes('SPRAY') || n.includes('SPREY')) return 'Bakım & Katkı';
+            if (n.includes('KOMPRESÖR') || n.includes('POMPA')) return 'Aksesuar';
+
             return 'Diğer';
         }
 
