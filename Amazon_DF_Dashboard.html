@@ -735,7 +735,26 @@
             if (loadDataFromLocalStorage()) {
                 console.log("Data loaded from LocalStorage");
             } else {
-                console.log("No saved data found.");
+                console.log("No saved data found. Attempting to load default data...");
+                fetch('data/df_orders.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error("Default data not found");
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("Default data loaded:", data.length);
+                        processData(data); // Process without saving to localStorage (optional, or save if needed)
+                        // If we want to save it to localStorage so it persists:
+                        // saveDataToLocalStorage(data); 
+                        // But usually for "default" view we might just show it.
+                        // Let's NOT save to localStorage to avoid filling user's quota with default data
+
+                        document.getElementById('updateDate').innerHTML = "Varsayılan Veri Yüklendi";
+                    })
+                    .catch(err => {
+                        console.log("Could not load default data:", err);
+                        document.getElementById('updateDate').textContent = "Veri Bekleniyor...";
+                    });
             }
         });
 

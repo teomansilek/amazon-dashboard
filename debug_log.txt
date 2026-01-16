@@ -4,3 +4,19 @@ Calisma Dizini: c:\Users\NEKO\.gemini\antigravity\scratch\amazon_dashboard
 Adim 1: Yeni dosyalar isleniyor...
 Kaynak: C:\Users\NEKO\Desktop\Amazon Siparişler\
 
+Processing FBA Orders: C:\Users\NEKO\Desktop\Amazon Siparişler\Amazon FBA Orders_2026-01-16.xls
+Saved 2482 FBA orders to fba_orders.json
+Processing FBA Invoices: C:\Users\NEKO\Desktop\Amazon Siparişler\Amazon FBA Invoices_2026-01-16.csv
+Saved 64 FBA invoices to fba_invoices.json
+Processing DF Orders: C:\Users\NEKO\Desktop\Amazon Siparişler\Amazon DF Orders_2026-01-16.csv
+Saved 2261 DF orders to df_orders.json
+
+Adim 2: GitHub Veritabani Guncelleniyor...
+
+[main 427fb94] Gunluk veri guncellemesi: Cum 16.01.2026 10:56:43,17
+ 2 files changed, 10 insertions(+), 2 deletions(-)
+ create mode 100644 debug_log.txt
+
+Adim 3: Sunucuya Gonderiliyor...
+To https://github.com/teomansilek/amazon-dashboard.git
+   34009c3..427fb94  main -> main
