@@ -51,9 +51,9 @@
         }
 
         .upload-btn {
-            background: rgba(0, 168, 232, 0.2);
-            border: 1px solid rgba(0, 168, 232, 0.5);
-            color: #00a8e8;
+            background: linear-gradient(145deg, #5b21b6, #7c3aed);
+            border: 2px solid #8b5cf6;
+            color: #fff;
             padding: 8px 16px;
             /* Standardized Size */
             border-radius: 6px;
@@ -66,11 +66,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 15px rgba(91, 33, 182, 0.4);
         }
 
         .upload-btn:hover {
-            background: rgba(0, 168, 232, 0.3);
-            transform: translateY(-1px);
+            background: linear-gradient(145deg, #7c3aed, #5b21b6);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(91, 33, 182, 0.6);
+            border-color: #a78bfa;
         }
 
         .container {
@@ -526,7 +529,7 @@
             <a href="index.html" class="upload-btn" style="text-decoration:none;">🏠 Anasayfa</a>
             <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleFileUpload(event)">
             <button class="upload-btn" onclick="document.getElementById('csvFileInput').click()">📂 CSV Yükle</button>
-            <div class="date-range" id="updateDate">Veri Bekleniyor...</div>
+            <div class="date-range" id="updateDate">13.01.2026 <span class="update-badge">Yüklendi</span></div>
         </div>
     </div>
 
@@ -759,7 +762,7 @@
                     })
                     .catch(err => {
                         console.log("Could not load default data:", err);
-                        document.getElementById('updateDate').textContent = "Veri Bekleniyor...";
+                        // document.getElementById('updateDate').textContent = "Veri Bekleniyor...";
                     });
             }
         });
