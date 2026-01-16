@@ -30,26 +30,30 @@
         }
 
         .menu-link {
-            text-decoration: none;
-            color: #9b59b6;
-            font-weight: 600;
-            background: rgba(142, 68, 173, 0.2);
-            border: 1px solid rgba(142, 68, 173, 0.5);
+            background: linear-gradient(145deg, #5b21b6, #7c3aed);
+            border: 2px solid #8b5cf6;
+            color: #fff;
             padding: 8px 16px;
             /* Standardized Size */
             border-radius: 6px;
+            cursor: pointer;
             font-size: 14px;
             /* Standardized Font Size */
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(91, 33, 182, 0.4);
         }
 
         .menu-link:hover {
-            background: rgba(142, 68, 173, 0.3);
+            background: linear-gradient(145deg, #7c3aed, #5b21b6);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(91, 33, 182, 0.6);
+            border-color: #a78bfa;
             text-decoration: none;
-            transform: translateY(-1px);
         }
 
         .header h1 {
@@ -527,9 +531,7 @@
                 <span class="fba-badge">FBA</span>
                 <span class="df-badge">DF</span>
             </div>
-            <a href="index.html"
-                style="color:white; text-decoration:none; background:rgba(255,255,255,0.1); padding:8px 12px; border-radius:5px; font-size:12px; font-weight:600;">🏠
-                Anasayfa</a>
+            <a href="index.html" class="menu-link">🏠 Anasayfa</a>
         </div>
     </div>
 
