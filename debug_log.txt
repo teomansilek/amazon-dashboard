@@ -1,6 +1,7 @@
-BASLANGIC ZAMANI: Cum 16.01.2026 18:13:21,44
+BASLANGIC ZAMANI: Cum 16.01.2026 18:16:15,34
 Calisma Dizini: c:\Users\NEKO\.gemini\antigravity\scratch\amazon_dashboard
 
 Adim 1: Yeni dosyalar isleniyor...
 Kaynak: C:\Users\NEKO\Desktop\Amazon Siparişler\
 
+Processing FBA Orders: C:\Users\NEKO\Desktop\Amazon Siparişler\Amazon FBA Orders_2026-01-16.xls
