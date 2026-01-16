@@ -793,7 +793,13 @@
                         processData(rawData, true);
 
                         if (savedDate && document.getElementById('updateDate')) {
-                            document.getElementById('updateDate').innerHTML = savedDate;
+                            // Fix: Don't restore if it was the loading message
+                            if (!savedDate.includes("İşleniyor") && !savedDate.includes("Bekleniyor")) {
+                                document.getElementById('updateDate').innerHTML = savedDate;
+                            } else {
+                                // Fallback to current date if saved date was invalid/loading state
+                                document.getElementById('updateDate').innerHTML = `${new Date().toLocaleDateString('tr-TR')} <span class="update-badge">Yüklendi</span>`;
+                            }
                         }
                         return true;
                     }
