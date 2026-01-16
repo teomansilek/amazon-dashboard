@@ -699,10 +699,8 @@
                         <div class="legend-box" style="background:#00a8e8"></div><span>DF Tutar</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-line" style="background:#ff9900"></div><span>FBA Adet</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-line" style="background:#00a8e8"></div><span>DF Adet</span>
+                        <div class="legend-line" style="background:#ffffff; border:1px solid #ccc;"></div>
+                        <span>Adet</span>
                     </div>
                 </div>
                 <div class="chart-container"><canvas id="compareChart"></canvas></div>
@@ -1254,7 +1252,7 @@
                     labels: ['FBA', 'DF'],
                     datasets: [
                         { label: 'Tutar', data: [fbaTutar, dfTutar], backgroundColor: ['#ff9900', '#00a8e8'], yAxisID: 'y', order: 2 },
-                        { label: 'Adet', data: [fbaAdet, dfAdet], type: 'line', borderColor: ['#ff9900', '#00a8e8'], backgroundColor: ['#ff9900', '#00a8e8'], borderWidth: 3, pointRadius: 4, yAxisID: 'y1', order: 1 }
+                        { label: 'Adet', data: [fbaAdet, dfAdet], type: 'line', borderColor: '#ffffff', backgroundColor: '#ffffff', borderWidth: 3, pointRadius: 5, pointHoverRadius: 7, yAxisID: 'y1', order: 1 }
                     ]
                 },
                 options: {
