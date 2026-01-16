@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Kombine Analiz - FBA + DF - Neko Otomotiv</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e4e4e4;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #8e44ad 0%, #9b59b6 50%, #3498db 100%);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(142, 68, 173, 0.4);
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header .date-range {
+            color: #fff;
+            font-size: 11px;
+            opacity: 0.9;
+            text-align: right;
+        }
+
+        .fba-badge {
+            background: #ff9900;
+            color: #1a1a2e;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .df-badge {
+            background: #00a8e8;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .global-dropdown {
+            background: linear-gradient(145deg, #fff 0%, #f0f0f0 100%);
+            color: #1a1a2e;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .global-dropdown option {
+            background: #fff;
+            color: #1a1a2e;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: linear-gradient(145deg, #1e2a4a 0%, #162038 100%);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(142, 68, 173, 0.2);
+            transition: transform 0.3s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(142, 68, 173, 0.2);
+        }
+
+        .metric-card .label {
+            font-size: 12px;
+            color: #8b9dc3;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .metric-card .value {
+            font-size: 26px;
+            font-weight: 700;
+            color: #9b59b6;
+        }
+
+        .metric-card .subvalue {
+            font-size: 12px;
+            color: #6b7c9c;
+            margin-top: 5px;
+        }
+
+        .metric-card .breakdown {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-card .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .fba-color {
+            color: #ff9900 !important;
+        }
+
+        .df-color {
+            color: #00a8e8 !important;
+        }
+
+        .both-color {
+            color: #2ecc71 !important;
+        }
+
+        .loss-color {
+            color: #e74c3c !important;
+        }
+
+        .chart-card {
+            background: linear-gradient(145deg, #1e2a4a 0%, #162038 100%);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(142, 68, 173, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .chart-card h3 {
+            font-size: 16px;
+            color: #9b59b6;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(142, 68, 173, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chart-card h3 small {
+            font-size: 11px;
+            color: #8b9dc3;
+            font-weight: normal;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+        }
+
+        .chart-container-large {
+            position: relative;
+            height: 420px;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .charts-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .table-card {
+            background: linear-gradient(145deg, #1e2a4a 0%, #162038 100%);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(142, 68, 173, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .table-card h3 {
+            font-size: 16px;
+            color: #9b59b6;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(142, 68, 173, 0.2);
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .orders-table thead {
+            background: rgba(142, 68, 173, 0.15);
+        }
+
+        .orders-table th {
+            padding: 12px 8px;
+            text-align: left;
+            color: #9b59b6;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(142, 68, 173, 0.3);
+            position: sticky;
+            top: 0;
+            background: #1e2a4a;
+        }
+
+        .orders-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .orders-table tr:hover {
+            background: rgba(142, 68, 173, 0.05);
+        }
+
+        .orders-table .sku-cell {
+            font-family: monospace;
+            font-size: 10px;
+            color: #8b9dc3;
+        }
+
+        .channel-badge {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .channel-fba {
+            background: rgba(255, 153, 0, 0.2);
+            color: #ff9900;
+        }
+
+        .channel-df {
+            background: rgba(0, 168, 232, 0.2);
+            color: #00a8e8;
+        }
+
+        .channel-both {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .table-scroll {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        /* Scrollbar styles from FBA Dashboard (Yellow/Orange) */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ff9900;
+            border-radius: 5px;
+            border: 2px solid #1a1a2e;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #e68a00;
+        }
+
+        .legend-custom {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .legend-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .legend-line {
+            width: 24px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .summary-boxes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-box {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .summary-box.fba {
+            background: rgba(255, 153, 0, 0.1);
+            border: 1px solid rgba(255, 153, 0, 0.3);
+        }
+
+        .summary-box.df {
+            background: rgba(0, 168, 232, 0.1);
+            border: 1px solid rgba(0, 168, 232, 0.3);
+        }
+
+        .summary-box.total {
+            background: rgba(142, 68, 173, 0.1);
+            border: 1px solid rgba(142, 68, 173, 0.3);
+        }
+
+        .summary-box .box-label {
+            font-size: 11px;
+            color: #8b9dc3;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .summary-box .box-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .summary-box .box-sub {
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: rgba(142, 68, 173, 0.1);
+            border: 2px solid rgba(142, 68, 173, 0.3);
+            color: #9b59b6;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #9b59b6;
+            color: #fff;
+        }
+
+        .tab-btn:hover {
+            background: rgba(142, 68, 173, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .mode-indicator {
+            background: rgba(142, 68, 173, 0.2);
+            border: 2px solid #9b59b6;
+            color: #9b59b6;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .charts-row,
+            .charts-row-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #7b8dac;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            margin-top: 50px;
+        }
+
+        .error-details {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid #e74c3c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: inline-block;
+            text-align: left;
+        }
+
+        .error-details h3 {
+            color: #e74c3c;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .error-details ul {
+            margin-left: 20px;
+        }
+
+        .error-details li {
+            margin-bottom: 5px;
+            color: #c0392b;
+        }
+
+        .action-btn {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div>
+            <h1 onclick="window.location.href='index.html'">📊 Amazon Kombine Analiz - FBA + DF</h1>
+            <div class="date-range" id="headerDateRange">Veri Bekleniyor...</div>
+        </div>
+        <div class="header-right">
+            <select class="global-dropdown" id="globalModeSelect" onchange="changeGlobalMode()">
+                <option value="talep">📦 FBA Talep + DF Toplam Sipariş</option>
+                <option value="alinan">📥 FBA Alınan + DF Gönderilen</option>
+                <option value="kayip">⚠️ FBA Kayıp + DF İptal</option>
+            </select>
+            <div>
+                <span class="fba-badge">FBA</span>
+                <span class="df-badge">DF</span>
+            </div>
+            <a href="index.html"
+                style="color:white; text-decoration:none; background:rgba(255,255,255,0.1); padding:8px 12px; border-radius:5px; font-size:12px;">🏠
+                Menü</a>
+            <button onclick="showDebugModal()"
+                style="background:rgba(231, 76, 60, 0.2); color:#e74c3c; border:1px solid #e74c3c; padding:8px 12px; border-radius:5px; font-size:12px; cursor:pointer; font-weight:bold;">🛠️
+                Debug</button>
+        </div>
+    </div>
+
+    <!-- ... (rest of container) ... -->
+
+    <!-- DEBUG MODAL -->
+    <div id="debugModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;">
+        <div
+            style="background:#1e2a4a; padding:30px; border-radius:12px; max-width:600px; width:90%; border:2px solid #e74c3c; color:#fff; font-family:monospace;">
+            <h2 style="color:#e74c3c; margin-bottom:20px; border-bottom:1px solid #e74c3c; padding-bottom:10px;">🛠️
+                Debug Bilgileri</h2>
+            <div id="debugContent"
+                style="white-space:pre-wrap; max-height:400px; overflow:auto; font-size:12px; line-height:1.4;"></div>
+            <div style="margin-top:20px; text-align:right;">
+                <button onclick="document.getElementById('debugModal').style.display='none'"
+                    style="background:#e74c3c; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer;">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ... (existing scripts) ... 
+
+        function showDebugModal() {
+            const keys = ['fbaData_poDetails', 'dfData_raw', 'fbaData_metrics', 'fbaData_date', 'dfData_date'];
+            let report = "--- LOCAL STORAGE RAPORU ---\n";
+            let allGood = true;
+
+            keys.forEach(k => {
+                const val = localStorage.getItem(k);
+                if (!val) {
+                    report += `❌ [${k}]: BULUNAMADI\n`;
+                    if (k === 'fbaData_poDetails' || k === 'dfData_raw') allGood = false;
+                } else {
+                    const size = (val.length / 1024).toFixed(2) + ' KB';
+                    let type = "String";
+                    let count = "?";
+                    try {
+                        const parsed = JSON.parse(val);
+                        if (Array.isArray(parsed)) {
+                            type = "Array";
+                            count = parsed.length + " öğe";
+                        } else if (typeof parsed === 'object') {
+                            type = "Object";
+                            count = Object.keys(parsed).length + " anahtar";
+                        }
+                    } catch (e) { type = "Invalid JSON"; }
+
+                    report += `✅ [${k}]: ${size} | ${type} (${count})\n`;
+                }
+            });
+
+            report += "\n--- VERİ ÖRNEKLERİ (İLK SATIRLAR) ---\n";
+            try {
+                // FBA Sample
+                const fbaRaw = localStorage.getItem('fbaData_poDetails');
+                if (fbaRaw) {
+                    const parsed = JSON.parse(fbaRaw);
+                    let sample = null;
+                    if (Array.isArray(parsed)) sample = parsed[0];
+                    else if (typeof parsed === 'object') {
+                        const keys = Object.keys(parsed);
+                        if (keys.length > 0 && Array.isArray(parsed[keys[0]])) sample = parsed[keys[0]][0];
+                    }
+                    report += `📦 FBA Sütunları:\n${sample ? JSON.stringify(Object.keys(sample), null, 2) : "Örnek bulunamadı"}\n`;
+                }
+
+                // DF Sample
+                const dfRaw = localStorage.getItem('dfData_raw');
+                if (dfRaw) {
+                    const parsed = JSON.parse(dfRaw);
+                    const sample = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : null;
+                    report += `\n🚚 DF Sütunları:\n${sample ? JSON.stringify(Object.keys(sample), null, 2) : "Örnek bulunamadı"}\n`;
+                }
+            } catch (e) { report += "\nÖrnekleme hatası: " + e.message; }
+
+            report += "\n--- SİSTEM ANALİZİ ---\n";
+            if (!localStorage.getItem('fbaData_poDetails')) {
+                report += "⚠️ FBA Detay verisi eksik. FBA Dashboard'da XLS yüklenmemiş olabilir.\n";
+            }
+            if (!localStorage.getItem('dfData_raw')) {
+                report += "⚠️ DF verisi eksik. DF Dashboard'da CSV yüklenmemiş olabilir.\n";
+            }
+            if (allGood) {
+                report += "✅ Gerekli tüm veriler mevcut görünüyor. Sorun devam ediyorsa verilerde mantıksal hata olabilir.\n";
+            }
+
+            document.getElementById('debugContent').textContent = report;
+            document.getElementById('debugModal').style.display = 'flex';
+        }
+
+        // ...
+    </script>
+
+    <div class="container" id="mainContent" style="display:none">
+        <div class="mode-indicator" id="modeIndicator">📦 FBA Talep Edilen + DF Siparişler</div>
+
+        <!-- ÖZET KUTULARI -->
+        <div class="summary-boxes">
+            <div class="summary-box fba">
+                <div class="box-label">FBA</div>
+                <div class="box-value fba-color" id="fbaAdetBox">-</div>
+                <div class="box-sub fba-color" id="fbaTutarBox">-</div>
+            </div>
+            <div class="summary-box df">
+                <div class="box-label">DF</div>
+                <div class="box-value df-color" id="dfAdetBox">-</div>
+                <div class="box-sub df-color" id="dfTutarBox">-</div>
+            </div>
+            <div class="summary-box total">
+                <div class="box-label">Toplam</div>
+                <div class="box-value" style="color:#9b59b6" id="toplamAdetBox">-</div>
+                <div class="box-sub" style="color:#9b59b6" id="toplamTutarBox">-</div>
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="label">Toplam ASIN</div>
+                <div class="value" id="metricAsin">-</div>
+                <div class="breakdown">
+                    <div class="breakdown-item"><span>FBA:</span><span class="fba-color" id="metricAsinFba">-</span>
+                    </div>
+                    <div class="breakdown-item"><span>DF:</span><span class="df-color" id="metricAsinDf">-</span></div>
+                    <div class="breakdown-item"><span>Ortak:</span><span class="both-color"
+                            id="metricAsinCommon">-</span></div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Toplam Adet</div>
+                <div class="value" id="metricToplamAdet">-</div>
+                <div class="breakdown">
+                    <div class="breakdown-item"><span>FBA:</span><span class="fba-color" id="metricFbaAdet">-</span>
+                    </div>
+                    <div class="breakdown-item"><span>DF:</span><span class="df-color" id="metricDfAdet">-</span></div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Toplam Ciro</div>
+                <div class="value" id="metricToplamTutar">-</div>
+                <div class="breakdown">
+                    <div class="breakdown-item"><span>FBA:</span><span class="fba-color" id="metricFbaTutar">-</span>
+                    </div>
+                    <div class="breakdown-item"><span>DF:</span><span class="df-color" id="metricDfTutar">-</span></div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="label">FBA Payı (Adet)</div>
+                <div class="value fba-color" id="metricFbaPay">-</div>
+                <div class="subvalue" id="metricFbaPaySub">-</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">DF Payı (Adet)</div>
+                <div class="value df-color" id="metricDfPay">-</div>
+                <div class="subvalue" id="metricDfPaySub">-</div>
+            </div>
+            <div class="metric-card">
+                <div class="label">Ortak Ürün</div>
+                <div class="value both-color" id="metricCommonCount">-</div>
+                <div class="subvalue">Her iki kanalda işlem gören</div>
+            </div>
+        </div>
+
+        <!-- GRAFİKLER -->
+        <div class="charts-row-3">
+            <div class="chart-card">
+                <h3>🔀 Kanal Dağılımı <small>ASIN bazında</small></h3>
+                <div class="chart-container"><canvas id="kanalChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>📊 FBA vs DF Karşılaştırma</h3>
+                <div class="legend-custom">
+                    <div class="legend-item">
+                        <div class="legend-box" style="background:#ff9900"></div><span>FBA Tutar</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background:#00a8e8"></div><span>DF Tutar</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="background:#ff9900"></div><span>FBA Adet</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="background:#00a8e8"></div><span>DF Adet</span>
+                    </div>
+                </div>
+                <div class="chart-container"><canvas id="compareChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>📦 Kategori Dağılımı (FBA)</h3>
+                <div class="chart-container"><canvas id="categoryChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="charts-row">
+            <div class="chart-card">
+                <h3>🏷️ Top 20 Marka <small>Toplam Tutar bazında</small></h3>
+                <div class="chart-container-large"><canvas id="brandChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>🏆 Top Markalar - FBA vs DF</h3>
+                <div class="legend-custom">
+                    <div class="legend-item">
+                        <div class="legend-box" style="background:#ff9900"></div><span>FBA</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background:#00a8e8"></div><span>DF</span>
+                    </div>
+                </div>
+                <div class="chart-container-large"><canvas id="brandStackedChart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- TOP ÜRÜNLER -->
+        <div class="table-card">
+            <h3>🔥 En Çok Talep Gören Ürünler (Top 50)</h3>
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="showTab('adet')">Adet Bazlı</button>
+                <button class="tab-btn" onclick="showTab('tutar')">Tutar Bazlı</button>
+                <button class="tab-btn" onclick="showTab('both')">Her İki Kanalda</button>
+            </div>
+
+            <div id="tab-adet" class="tab-content active">
+                <div class="table-scroll">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>SKU</th>
+                                <th>Ürün</th>
+                                <th>Marka</th>
+                                <th>Kanal</th>
+                                <th>FBA</th>
+                                <th>DF</th>
+                                <th style="color:#9b59b6">Toplam</th>
+                                <th>Toplam ₺</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topAdetBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-tutar" class="tab-content">
+                <div class="table-scroll">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>SKU</th>
+                                <th>Ürün</th>
+                                <th>Marka</th>
+                                <th>Kanal</th>
+                                <th>FBA ₺</th>
+                                <th>DF ₺</th>
+                                <th style="color:#9b59b6">Toplam ₺</th>
+                                <th>Adet</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topTutarBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-both" class="tab-content">
+                <div class="table-scroll">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>SKU</th>
+                                <th>Ürün</th>
+                                <th>Marka</th>
+                                <th>FBA</th>
+                                <th>FBA ₺</th>
+                                <th>DF</th>
+                                <th>DF ₺</th>
+                                <th style="color:#2ecc71">Toplam</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bothBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="errorState" class="empty-state" style="display:none">
+        <h2>⚠️ Veri Bulunamadı</h2>
+        <p>Dashboard'un çalışması için aşağıdaki verilerin tarayıcı hafızasında bulunması gerekir:</p>
+
+        <div class="error-details">
+            <h3>Eksik Veriler:</h3>
+            <ul id="missingList"></ul>
+        </div>
+
+        <div style="margin-top:20px; font-size:14px; color:#bdc3c7">
+            <strong>Çözüm:</strong><br><br>
+            1. <a href="Amazon_FBA_Dashboard.html" target="_blank" style="color:#ff9900">FBA Dashboard</a>'a gidin ve
+            <b>"Sipariş Listesi (XLS)"</b> dosyasını yükleyin.<br>
+            2. <a href="Amazon_DF_Dashboard.html" target="_blank" style="color:#00a8e8">DF Dashboard</a>'a gidin ve
+            <b>"Orders Report (CSV)"</b> dosyasını yükleyin.<br>
+            3. Bu sayfaya dönüp yenileyin.
+        </div>
+
+        <div style="margin-top:30px">
+            <button onclick="location.reload()" class="tab-btn active">Sayfayı Yenile</button>
+        </div>
+    </div>
+
+    <script>
+        // === GLOBAL CONFIG ===
+        let currentMode = 'talep';
+        let compareChart, brandChart, brandStackedChart, categoryChart, kanalChart;
+        let processedData = {
+            talep: {}, alinan: {}, kayip: {}
+        };
+        const BRANDS = ["LIQUI MOLY", "OSRAM", "PHOTON", "BOSCH", "AYFAR", "NETEX", "KALE", "NIKEN", "DELPHI", "WINKEL", "PHILIPS", "NARVA", "HELLA", "VALEO", "FERODO", "BREMBO", "TRW", "MANN", "MAHLE", "PURFLUX", "SKF", "FAG", "INA", "NGK", "DENSO", "SEGER", "MGA", "GATES", "CONTITECH", "DAYCO", "MARS", "CASTROL", "MOTUL", "ELF", "TOTAL", "SHELL", "MOBIL", "PETROL OFISI", "LUK", "SACHS"];
+
+        // Formatters
+        function formatNum(n) { return n ? n.toLocaleString('tr-TR') : '0'; }
+        function formatMoney(n) { if (!n) return '₺0'; return '₺' + (n >= 1000000 ? (n / 1000000).toFixed(2).replace('.', ',') + 'M' : n.toLocaleString('tr-TR')); }
+        function parseMoney(str) {
+            if (typeof str === 'number') return str;
+            if (!str) return 0;
+            str = str.toString().replace(/[^0-9,.-]/g, '');
+            if (str.includes(',') && str.includes('.')) str = str.replace('.', '').replace(',', '.');
+            else if (str.includes(',')) str = str.replace(',', '.');
+            return parseFloat(str) || 0;
+        }
+
+        // === MAIN LOGIC ===
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllData();
+        });
+
+        function loadAllData() {
+            try {
+                // 1. Load from localStorage
+                const fbaPoRaw = localStorage.getItem('fbaData_poDetails');
+                const dfRaw = localStorage.getItem('dfData_raw');
+
+                const fbaDate = localStorage.getItem('fbaData_date') || '?';
+                const dfDate = localStorage.getItem('dfData_date') || '?';
+
+                document.getElementById('headerDateRange').textContent = `FBA Verisi: ${fbaDate} | DF Verisi: ${dfDate}`;
+
+                const missing = [];
+                if (!fbaPoRaw) missing.push("FBA Sipariş Listesi (XLS) verisi eksik.");
+                if (!dfRaw) missing.push("DF Sipariş Listesi (CSV) verisi eksik.");
+
+                if (missing.length > 0) {
+                    showError(missing);
+                    return;
+                }
+
+                let fbaPOs = [];
+                try {
+                    const parsedFba = JSON.parse(fbaPoRaw);
+                    // Flatten FBA POs if it's an object
+                    if (Array.isArray(parsedFba)) {
+                        fbaPOs = parsedFba;
+                    } else if (typeof parsedFba === 'object' && parsedFba !== null) {
+                        Object.values(parsedFba).forEach(arr => {
+                            if (Array.isArray(arr)) fbaPOs.push(...arr);
+                        });
+                    }
+                } catch (e) { console.error("FBA Parse Error", e); }
+
+                let dfOrders = [];
+                try {
+                    dfOrders = JSON.parse(dfRaw);
+                } catch (e) { console.error("DF Parse Error", e); }
+
+                if (fbaPOs.length === 0 || dfOrders.length === 0) {
+                    showError(["Veriler yüklendi ancak içerik boş veya hatalı."]);
+                    return;
+                }
+
+                // 2. Process for each mode
+                processedData.talep = processMode(fbaPOs, dfOrders, 'talep');
+                processedData.alinan = processMode(fbaPOs, dfOrders, 'alinan');
+                processedData.kayip = processMode(fbaPOs, dfOrders, 'kayip');
+
+                // 3. Init UI
+                document.getElementById('mainContent').style.display = 'block';
+                document.getElementById('errorState').style.display = 'none';
+                updateAllData();
+
+            } catch (err) {
+                console.error(err);
+                alert("Veri yüklenirken hata: " + err.message);
+            }
+        }
+
+        function showError(missingItems) {
+            document.getElementById('mainContent').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+
+            const list = document.getElementById('missingList');
+            list.innerHTML = missingItems.map(i => `<li>${i}</li>`).join('');
+        }
+
+        // Core processing logic
+        function processMode(fbaPOs, dfOrders, mode) {
+            const products = {}; // Key: SKU (or ASIN if SKU missing)
+
+            // --- FBA PROCESS ---
+            fbaPOs.forEach(item => {
+                const asin = item.asin || item.ASIN;
+                const rawSku = item.sku || item.SKU;
+
+                let key = 'UNKNOWN';
+                if (asin && String(asin).trim().length > 0) key = String(asin).trim().toUpperCase();
+                else if (rawSku) key = String(rawSku).trim().toUpperCase();
+
+                if (key === 'UNKNOWN') return;
+
+                if (!products[key]) products[key] = initProduct(rawSku || key, asin, item.urun || item['Ürün Adı'], item.Marka || '');
+
+                let qty = 0, rev = 0;
+
+                // Robust parsing for FBA keys found in debug
+                const p_talep = parseInt(item.talep || item['Talep edilen miktar'] || 0);
+                const p_kabul = parseInt(item.kabul || item['Kabul edilen miktar'] || 0);
+
+                const p_birim = parseMoney(item.birim_fiyat || item['Birim Maliyet']);
+                const p_kabul_tutar = parseMoney(item.kabul_tutar || item['Kabul edilen toplam maliyet']);
+
+                if (mode === 'talep') {
+                    qty = p_talep;
+                    rev = qty * p_birim; // Revenue estimate
+                } else if (mode === 'alinan') {
+                    qty = p_kabul;
+                    rev = p_kabul_tutar;
+                } else if (mode === 'kayip') {
+                    qty = Math.max(0, p_talep - p_kabul);
+                    rev = qty * p_birim;
+                }
+
+                if (qty > 0) {
+                    products[key].fbaAdet += qty;
+                    products[key].fbaTutar += rev;
+                }
+
+                if (!products[key].marka) products[key].marka = detectBrand(item.urun || item['Ürün Adı']);
+                if (!products[key].kategori) products[key].kategori = item.kategori || item['Kategori'] || 'Diğer';
+            });
+
+            // --- DF PROCESS ---
+            dfOrders.forEach(row => {
+                const asin = row.ASIN || row['asin'];
+                const rawSku = row.SKU || row['sku'];
+
+                let key = 'UNKNOWN';
+                if (asin && String(asin).trim().length > 0) key = String(asin).trim().toUpperCase();
+                else if (rawSku) key = String(rawSku).trim().toUpperCase();
+
+                if (key === 'UNKNOWN') return;
+
+                const status = (row['Sipariş Durumu'] || row['order-status'] || row['Durum'] || '').toUpperCase();
+
+                let qty = parseInt(row['Ürün Miktarı'] || row['quantity-ordered'] || row['Adet'] || 0);
+                let price = parseMoney(row['Ürün Maliyeti'] || row['item-price'] || row['Birim Fiyat']);
+
+                if (!qty) return;
+
+                if (!products[key]) products[key] = initProduct(rawSku || key, asin, row['Ürün Başlığı'] || row['product-name'], '');
+
+                let dfQty = 0;
+                let dfRev = 0;
+
+                if (mode === 'talep') {
+                    // Total Orders
+                    dfQty = qty;
+                    dfRev = qty * price;
+                } else if (mode === 'alinan') {
+                    // Shipped
+                    if (status.includes('SHIPPED') || status.includes('GÖNDERİLDİ') || status.includes('KARGOLANDI')) {
+                        dfQty = qty;
+                        dfRev = qty * price;
+                    }
+                } else if (mode === 'kayip') {
+                    // Cancelled
+                    if (status.includes('CANCELLED') || status.includes('İPTAL')) {
+                        dfQty = qty;
+                        dfRev = qty * price;
+                    }
+                }
+
+                if (dfQty > 0) {
+                    products[key].dfAdet += dfQty;
+                    products[key].dfTutar += dfRev;
+                }
+
+                if (!products[key].marka) products[key].marka = detectBrand(row['Ürün Başlığı'] || row['product-name']);
+            });
+
+            // --- AGGREGATE ---
+            const result = {
+                products: [],
+                both: [],
+                marka: [],
+                kategori: [],
+                metrics: { fbaAdet: 0, fbaTutar: 0, dfAdet: 0, dfTutar: 0, toplamAdet: 0, toplamTutar: 0 }
+            };
+
+            const brandMap = {};
+            const catMap = {};
+
+            Object.values(products).forEach(p => {
+                p.toplamAdet = p.fbaAdet + p.dfAdet;
+                p.toplamTutar = p.fbaTutar + p.dfTutar;
+                p.kanal = (p.fbaAdet > 0 && p.dfAdet > 0) ? 'Her İkisi' : (p.fbaAdet > 0 ? 'FBA' : 'DF');
+
+                if (p.toplamAdet === 0) return; // Skip zero items
+
+                result.products.push(p);
+
+                // Metrics
+                result.metrics.fbaAdet += p.fbaAdet;
+                result.metrics.fbaTutar += p.fbaTutar;
+                result.metrics.dfAdet += p.dfAdet;
+                result.metrics.dfTutar += p.dfTutar;
+
+                // Marka Stats
+                const m = p.marka || 'Diğer';
+                if (!brandMap[m]) brandMap[m] = { marka: m, fbaTutar: 0, dfTutar: 0, toplamTutar: 0 };
+                brandMap[m].fbaTutar += p.fbaTutar;
+                brandMap[m].dfTutar += p.dfTutar;
+                brandMap[m].toplamTutar += p.toplamTutar;
+
+                // Cat Stats
+                const c = p.kategori || 'Diğer';
+                if (!catMap[c]) catMap[c] = { kategori: c, toplamTutar: 0 };
+                catMap[c].toplamTutar += p.toplamTutar;
+
+                // Both list check
+                if (p.kanal === 'Her İkisi') result.both.push(p);
+            });
+
+            result.metrics.toplamAdet = result.metrics.fbaAdet + result.metrics.dfAdet;
+            result.metrics.toplamTutar = result.metrics.fbaTutar + result.metrics.dfTutar;
+
+            result.marka = Object.values(brandMap).sort((a, b) => b.toplamTutar - a.toplamTutar);
+            result.kategori = Object.values(catMap).sort((a, b) => b.toplamTutar - a.toplamTutar);
+
+            return result;
+        }
+
+        function initProduct(sku, asin, urun, marka) {
+            return {
+                sku: sku, asin: asin || '', urun: urun || 'Bilinmeyen Ürün', marka: marka || detectBrand(urun),
+                fbaAdet: 0, fbaTutar: 0,
+                dfAdet: 0, dfTutar: 0,
+                toplamAdet: 0, toplamTutar: 0,
+                kanal: 'Yok',
+                kategori: ''
+            };
+        }
+
+        function detectBrand(name) {
+            if (!name) return 'Diğer';
+            const upper = name.toUpperCase();
+            for (const b of BRANDS) {
+                if (upper.includes(b)) return b;
+            }
+            return 'Diğer';
+        }
+
+        // === UI UPDATES ===
+
+        function changeGlobalMode() {
+            currentMode = document.getElementById('globalModeSelect').value;
+            updateAllData();
+        }
+
+        function updateAllData() {
+            const data = processedData[currentMode];
+            if (!data) return;
+
+            const modeLabels = {
+                talep: '📦 FBA Talep Edilen + DF Siparişler',
+                alinan: '✅ FBA Kabul Edilen + DF Gönderilen',
+                kayip: '⚠️ FBA Kayıp (Talep-Kabul) + DF İptal'
+            };
+            document.getElementById('modeIndicator').textContent = modeLabels[currentMode];
+
+            // 1. Update Metrics
+            const m = data.metrics;
+            document.getElementById('fbaAdetBox').textContent = formatNum(m.fbaAdet);
+            document.getElementById('fbaTutarBox').textContent = formatMoney(m.fbaTutar);
+            document.getElementById('dfAdetBox').textContent = formatNum(m.dfAdet);
+            document.getElementById('dfTutarBox').textContent = formatMoney(m.dfTutar);
+            document.getElementById('toplamAdetBox').textContent = formatNum(m.toplamAdet);
+            document.getElementById('toplamTutarBox').textContent = formatMoney(m.toplamTutar);
+
+            document.getElementById('metricToplamAdet').textContent = formatNum(m.toplamAdet);
+            document.getElementById('metricFbaAdet').textContent = formatNum(m.fbaAdet);
+            document.getElementById('metricDfAdet').textContent = formatNum(m.dfAdet);
+            document.getElementById('metricToplamTutar').textContent = formatMoney(m.toplamTutar);
+            document.getElementById('metricFbaTutar').textContent = formatMoney(m.fbaTutar);
+            document.getElementById('metricDfTutar').textContent = formatMoney(m.dfTutar);
+
+            const fbaPay = m.toplamAdet > 0 ? (m.fbaAdet / m.toplamAdet * 100).toFixed(1) : 0;
+            const dfPay = m.toplamAdet > 0 ? (m.dfAdet / m.toplamAdet * 100).toFixed(1) : 0;
+            document.getElementById('metricFbaPay').textContent = '%' + fbaPay;
+            document.getElementById('metricFbaPaySub').textContent = `${formatNum(m.fbaAdet)} / ${formatNum(m.toplamAdet)}`;
+            document.getElementById('metricDfPay').textContent = '%' + dfPay;
+            document.getElementById('metricDfPaySub').textContent = `${formatNum(m.dfAdet)} / ${formatNum(m.toplamAdet)}`;
+
+            // ASIN Counts
+            const totalAsin = data.products.length;
+            const fbaAsin = data.products.filter(p => p.fbaAdet > 0).length;
+            const dfAsin = data.products.filter(p => p.dfAdet > 0).length;
+            const common = data.products.filter(p => p.kanal === 'Her İkisi').length;
+
+            document.getElementById('metricAsin').textContent = formatNum(totalAsin);
+            document.getElementById('metricAsinFba').textContent = formatNum(fbaAsin);
+            document.getElementById('metricAsinDf').textContent = formatNum(dfAsin);
+            document.getElementById('metricAsinCommon').textContent = formatNum(common);
+            document.getElementById('metricCommonCount').textContent = formatNum(common);
+
+            // 2. Charts
+            updateCompareChart(m.fbaAdet, m.fbaTutar, m.dfAdet, m.dfTutar);
+            updateBrandChart(data.marka);
+            updateBrandStackedChart(data.marka);
+            updateCategoryChart(data.kategori);
+            updateKanalChart(fbaAsin, dfAsin, common);
+
+            // 3. Tables
+            updateTables(data);
+        }
+
+        function getChannelBadge(kanal) {
+            if (kanal === 'Her İkisi') return '<span class="channel-badge channel-both">Her İkisi</span>';
+            if (kanal === 'FBA') return '<span class="channel-badge channel-fba">FBA</span>';
+            return '<span class="channel-badge channel-df">DF</span>';
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function updateTables(data) {
+            // Adet bazlı sıralama (Top 50)
+            const byAdet = [...data.products].sort((a, b) => b.toplamAdet - a.toplamAdet).slice(0, 50);
+            document.getElementById('topAdetBody').innerHTML = byAdet.map((p, i) => `<tr>
+                <td>${i + 1}</td>
+                <td class="sku-cell">${p.sku}</td>
+                <td>${p.urun.substring(0, 40)}...</td>
+                <td>${p.marka}</td>
+                <td>${getChannelBadge(p.kanal)}</td>
+                <td class="fba-color">${p.fbaAdet > 0 ? p.fbaAdet : '-'}</td>
+                <td class="df-color">${p.dfAdet > 0 ? p.dfAdet : '-'}</td>
+                <td style="color:#9b59b6;font-weight:bold">${p.toplamAdet}</td>
+                <td>${formatMoney(p.toplamTutar)}</td>
+            </tr>`).join('');
+
+            // Tutar bazlı (Top 50)
+            const byTutar = [...data.products].sort((a, b) => b.toplamTutar - a.toplamTutar).slice(0, 50);
+            document.getElementById('topTutarBody').innerHTML = byTutar.map((p, i) => `<tr>
+                <td>${i + 1}</td>
+                <td class="sku-cell">${p.sku}</td>
+                <td>${p.urun.substring(0, 40)}...</td>
+                <td>${p.marka}</td>
+                <td>${getChannelBadge(p.kanal)}</td>
+                <td class="fba-color">${p.fbaTutar > 0 ? formatMoney(p.fbaTutar) : '-'}</td>
+                <td class="df-color">${p.dfTutar > 0 ? formatMoney(p.dfTutar) : '-'}</td>
+                <td style="color:#9b59b6;font-weight:bold">${formatMoney(p.toplamTutar)}</td>
+                <td>${p.toplamAdet}</td>
+            </tr>`).join('');
+
+            // Ortak ürünler
+            document.getElementById('bothBody').innerHTML = data.both.sort((a, b) => b.toplamAdet - a.toplamAdet).map((p, i) => `<tr>
+                <td>${i + 1}</td>
+                <td class="sku-cell">${p.sku}</td>
+                <td>${p.urun.substring(0, 30)}...</td>
+                <td>${p.marka}</td>
+                <td class="fba-color">${p.fbaAdet}</td>
+                <td class="fba-color">${formatMoney(p.fbaTutar)}</td>
+                <td class="df-color">${p.dfAdet}</td>
+                <td class="df-color">${formatMoney(p.dfTutar)}</td>
+                <td style="color:#2ecc71;font-weight:bold">${p.toplamAdet} / ${formatMoney(p.toplamTutar)}</td>
+            </tr>`).join('');
+        }
+
+        // --- CHARTS ---
+        function updateCompareChart(fbaAdet, fbaTutar, dfAdet, dfTutar) {
+            if (compareChart) compareChart.destroy();
+            compareChart = new Chart(document.getElementById('compareChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['FBA', 'DF'],
+                    datasets: [
+                        { label: 'Tutar', data: [fbaTutar, dfTutar], backgroundColor: ['#ff9900', '#00a8e8'], yAxisID: 'y', order: 2 },
+                        { label: 'Adet', data: [fbaAdet, dfAdet], type: 'line', borderColor: ['#ff9900', '#00a8e8'], backgroundColor: ['#ff9900', '#00a8e8'], borderWidth: 3, pointRadius: 4, yAxisID: 'y1', order: 1 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { position: 'left', title: { display: true, text: 'Tutar ₺' }, ticks: { callback: v => formatMoney(v) } },
+                        y1: { position: 'right', title: { display: true, text: 'Adet' }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function updateBrandChart(markaData) {
+            if (brandChart) brandChart.destroy();
+            const top = markaData.slice(0, 20);
+            brandChart = new Chart(document.getElementById('brandChart'), {
+                type: 'bar',
+                data: {
+                    labels: top.map(d => d.marka),
+                    datasets: [{ data: top.map(d => d.toplamTutar), backgroundColor: top.map((_, i) => `rgba(155, 89, 182, ${1 - i * 0.03})`), borderRadius: 4 }]
+                },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                }
+            });
+        }
+
+        function updateBrandStackedChart(markaData) {
+            if (brandStackedChart) brandStackedChart.destroy();
+            const top10 = markaData.slice(0, 10);
+            brandStackedChart = new Chart(document.getElementById('brandStackedChart'), {
+                type: 'bar',
+                data: {
+                    labels: top10.map(d => d.marka),
+                    datasets: [
+                        { label: 'FBA', data: top10.map(d => d.fbaTutar), backgroundColor: '#ff9900' },
+                        { label: 'DF', data: top10.map(d => d.dfTutar), backgroundColor: '#00a8e8' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { x: { stacked: true }, y: { stacked: true } }
+                }
+            });
+        }
+
+        function updateCategoryChart(katData) {
+            if (categoryChart) categoryChart.destroy();
+            const top = katData.slice(0, 8); // Top 8 category
+            categoryChart = new Chart(document.getElementById('categoryChart'), {
+                type: 'polarArea',
+                data: {
+                    labels: top.map(d => d.kategori),
+                    datasets: [{ data: top.map(d => d.toplamTutar), backgroundColor: ['#3498db', '#e74c3c', '#9b59b6', '#2ecc71', '#f1c40f', '#e67e22', '#1abc9c', '#34495e'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+            });
+        }
+
+        function updateKanalChart(fba, df, both) {
+            if (kanalChart) kanalChart.destroy();
+            // Calculation adjustment: unique FBA = Total FBA - Both, unique DF = Total DF - Both
+            const uniqueFba = Math.max(0, fba - both);
+            const uniqueDf = Math.max(0, df - both);
+
+            kanalChart = new Chart(document.getElementById('kanalChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sadece FBA', 'Sadece DF', 'Her İkisi'],
+                    datasets: [{ data: [uniqueFba, uniqueDf, both], backgroundColor: ['#ff9900', '#00a8e8', '#2ecc71'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+    </script>
+</body>
+
+</html>

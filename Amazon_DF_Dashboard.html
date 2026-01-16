@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon DF Siparişleri - Neko Otomotiv</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a252f 100%);
+            min-height: 100vh;
+            color: #e4e4e4;
+        }
+
+
+
+        .header {
+            background: linear-gradient(90deg, #00a8e8 0%, #007ea7 100%);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 168, 232, 0.3);
+        }
+
+        .header h1 {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .header .date-range {
+            color: #fff;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .upload-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: #192535;
+            /* Cleaner flat dark background */
+            border-radius: 12px;
+            padding: 22px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            /* Very subtle border */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .metric-title {
+            font-size: 11px;
+            color: #7b8dac;
+            /* Muted blue-gray */
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #3498db;
+            /* Default Blue for Order/Lines/Units */
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+
+        .metric-sub {
+            font-size: 13px;
+            color: #586b88;
+            /* Darker muted text */
+            font-weight: 400;
+        }
+
+        /* Specific Colors for Status Cards (overriding default blue) */
+        /* These helpers are used directly in HTML style attributes or can be classes */
+        .color-shipped {
+            color: #2ecc71 !important;
+        }
+
+        .color-pending {
+            color: #f39c12 !important;
+        }
+
+        .color-cancelled {
+            color: #e74c3c !important;
+        }
+
+        .chart-card {
+            background: linear-gradient(145deg, #1e2d3d 0%, #152232 100%);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(0, 168, 232, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .chart-card h3 {
+            font-size: 16px;
+            color: #00a8e8;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 168, 232, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-card h3 small {
+            font-size: 11px;
+            color: #8b9dc3;
+            font-weight: normal;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .chart-filter {
+            background: #1a1f2c;
+            color: #00a8e8;
+            border: 1px solid #00a8e8;
+            padding: 3px 6px;
+            border-radius: 5px;
+            font-size: 11px;
+            /* Even smaller as requested */
+            outline: none;
+            cursor: pointer;
+        }
+
+        .chart-filter:hover {
+            background: rgba(0, 168, 232, 0.1);
+        }
+
+        .chart-card h3 {
+            margin-bottom: 0;
+        }
+
+        /* Reset margin since header handles it */
+        .chart-container {
+            position: relative;
+            height: 350px;
+        }
+
+        .chart-container-large {
+            position: relative;
+            height: 400px;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .charts-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .charts-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .table-card {
+            background: linear-gradient(145deg, #1e2d3d 0%, #152232 100%);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(0, 168, 232, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .table-card h3 {
+            font-size: 16px;
+            color: #00a8e8;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 168, 232, 0.2);
+        }
+
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .orders-table thead {
+            background: rgba(0, 168, 232, 0.1);
+        }
+
+        .orders-table th {
+            padding: 12px 8px;
+            text-align: left;
+            color: #00a8e8;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(0, 168, 232, 0.3);
+            position: sticky;
+            top: 0;
+            background: #1e2d3d;
+        }
+
+        .orders-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .orders-table tr:hover {
+            background: rgba(0, 168, 232, 0.05);
+        }
+
+        .orders-table .sku-cell {
+            font-family: monospace;
+            font-size: 10px;
+            color: #8b9dc3;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-shipped {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .status-pending {
+            background: rgba(243, 156, 18, 0.2);
+            color: #f39c12;
+        }
+
+        .status-cancelled {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .table-scroll {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .table-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .table-scroll::-webkit-scrollbar-track {
+            background: #0f1419;
+        }
+
+        .table-scroll::-webkit-scrollbar-thumb {
+            background: #00a8e8;
+            border-radius: 4px;
+        }
+
+        .update-badge {
+            background: #2ecc71;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 15px;
+        }
+
+        .df-badge {
+            background: #00a8e8;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .order-link {
+            color: #00a8e8;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .order-link:hover {
+            color: #4dc3ff;
+        }
+
+        .legend-custom {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .legend-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .legend-line {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .dropdown-select {
+            background: linear-gradient(145deg, #2a3a4a 0%, #1e2d3d 100%);
+            color: #00a8e8;
+            border: 2px solid #00a8e8;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .dropdown-select option {
+            background: #1e2d3d;
+            color: #e4e4e4;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #1e2d3d 0%, #152232 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 900px;
+            width: 95%;
+            max-height: 80vh;
+            overflow: hidden;
+            border: 2px solid #00a8e8;
+            box-shadow: 0 20px 60px rgba(0, 168, 232, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(0, 168, 232, 0.3);
+        }
+
+        .modal-header h2 {
+            color: #00a8e8;
+            font-size: 20px;
+        }
+
+        .modal-close {
+            background: rgba(231, 76, 60, 0.2);
+            border: none;
+            color: #e74c3c;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .modal-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-stat {
+            background: rgba(0, 168, 232, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .modal-stat .stat-label {
+            font-size: 11px;
+            color: #8b9dc3;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .modal-stat .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00a8e8;
+        }
+
+        .modal-table-container {
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .modal-table thead {
+            background: rgba(0, 168, 232, 0.15);
+            position: sticky;
+            top: 0;
+        }
+
+        .modal-table th {
+            padding: 12px 8px;
+            text-align: left;
+            color: #00a8e8;
+            font-weight: 600;
+        }
+
+        .modal-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (max-width: 1200px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-row,
+            .charts-row-2,
+            .charts-row-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div>
+            <h1>🚚 Amazon DF (Direct Fulfillment) Siparişleri <span class="df-badge">Direct Fulfillment</span></h1>
+        </div>
+        <div class="header-controls">
+            <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleFileUpload(event)">
+            <button class="upload-btn" onclick="document.getElementById('csvFileInput').click()">📂 CSV Yükle</button>
+            <div class="date-range" id="updateDate">Veri Bekleniyor...</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+            <!-- 1. Toplam Sipariş -->
+            <div class="metric-card">
+                <div class="metric-title">TOPLAM SİPARİŞ</div>
+                <div class="metric-value" id="metric-total-orders">-</div>
+                <div class="metric-sub" id="metric-avg-order">-</div>
+            </div>
+
+            <!-- 2. Toplam Kalem -->
+            <div class="metric-card">
+                <div class="metric-title">TOPLAM KALEM</div>
+                <div class="metric-value" id="metric-total-lines">-</div>
+                <div class="metric-sub" id="metric-unique-asins">-</div>
+            </div>
+
+            <!-- 3. Toplam Adet -->
+            <div class="metric-card">
+                <div class="metric-title">TOPLAM ADET</div>
+                <div class="metric-value" id="metric-total-units">-</div>
+                <div class="metric-sub" id="metric-total-revenue">-</div>
+            </div>
+
+            <!-- 4. Gönderildi -->
+            <div class="metric-card">
+                <div class="metric-title">GÖNDERİLDİ (ADET)</div>
+                <div class="metric-value" style="color: #2ecc71;" id="metric-shipped-count">-</div>
+                <div class="metric-sub" id="metric-shipped-revenue">-</div>
+            </div>
+
+            <!-- 5. Beklemede -->
+            <div class="metric-card">
+                <div class="metric-title">BEKLEMEDE (ADET)</div>
+                <div class="metric-value" style="color: #f39c12;" id="metric-pending-count">-</div>
+                <div class="metric-sub" id="metric-pending-revenue">-</div>
+            </div>
+
+            <!-- 6. İptal Edilen -->
+            <div class="metric-card">
+                <div class="metric-title">İPTAL EDİLEN (ADET)</div>
+                <div class="metric-value" style="color: #e74c3c;" id="metric-cancelled-count">-</div>
+                <div class="metric-sub" id="metric-cancelled-revenue">-</div>
+            </div>
+
+            <!-- 7. Tamamlanma Oranı -->
+            <div class="metric-card">
+                <div class="metric-title">TAMAMLANMA</div>
+                <div class="metric-value" style="color: #2ecc71;" id="metric-completion-rate">%0</div>
+                <div class="metric-sub" id="metric-completion-sub">Başarı Oranı</div>
+            </div>
+        </div>
+
+        <!-- GÜNLÜK TREND -->
+        <div class="chart-card">
+            <h3>📈 Günlük Sipariş Trendi <small>Tutar (Bar) ve Adet (Çizgi)</small></h3>
+
+            <div class="chart-container-large"><canvas id="dailyChart"></canvas></div>
+        </div>
+
+        <div class="chart-card">
+            <h3>📅 Aylık Performans</h3>
+            <div class="legend-custom">
+                <div class="legend-item">
+                    <div class="legend-line" style="background:rgba(0, 168, 232, 0.85); height:3px; width:20px"></div>
+                    Tutar
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background:#f39c12; height:2px; width:20px"></div>Adet
+                </div>
+            </div>
+            <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
+        </div>
+
+        <div class="charts-row-3">
+            <div class="chart-card">
+                <h3>📊 Durum Dağılımı</h3>
+                <div class="chart-container"><canvas id="statusChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>🏷️ Top 10 Marka</h3>
+                    <select id="brandFilter" class="chart-filter">
+                        <option value="total">Toplam Sipariş Tutarı</option>
+                        <option value="shipped">Gönderilen Tutar</option>
+                        <option value="pending">Beklemede Tutar</option>
+                        <option value="cancelled">İptal Edilen Tutar</option>
+                    </select>
+                </div>
+                <div class="chart-container"><canvas id="brandChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <h3>📦 Kategori Dağılımı</h3>
+                <div class="chart-container"><canvas id="categoryChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="charts-row-2">
+            <!-- İPTAL TABLOSU (YENİ) -->
+            <div class="table-card" style="border-color: rgba(231, 76, 60, 0.3);">
+                <h3 style="color: #e74c3c; border-color: rgba(231, 76, 60, 0.3);">🚫 Son İptal Edilenler (Top 50)</h3>
+                <div class="table-scroll">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Sipariş No</th>
+                                <th>Ürün</th>
+                                <th>Tutar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cancelledOrdersBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>🔥 En Çok Satan Ürünler (Top 40)</h3>
+                    <select id="topProductsFilter" class="chart-filter">
+                        <option value="total">Toplam Sipariş Tutarı</option>
+                        <option value="shipped">Gönderilen Tutar</option>
+                        <option value="pending">Beklemede Tutar</option>
+                        <option value="cancelled">İptal Edilen Tutar</option>
+                    </select>
+                </div>
+                <div class="table-scroll">
+                    <table class="orders-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>SKU</th>
+                                <th>Ürün</th>
+                                <th>Adet</th>
+                                <th>Tutar (₺)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topProductsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- SİPARİŞ LİSTESİ -->
+        <div class="table-card">
+            <h3>📋 Son Siparişler (200) <small
+                    style="font-size:12px;color:#8b9dc3;font-weight:normal;margin-left:10px">💡 Sipariş numarasına
+                    tıklayarak detay</small></h3>
+            <div class="table-scroll">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Sipariş No</th>
+                            <th>Tarih</th>
+                            <th>Kalem</th>
+                            <th>Adet</th>
+                            <th>Tutar (₺)</th>
+                            <th>Durum</th>
+                            <th>Takip No</th>
+                            <th>Kargo Tarihi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📦 Sipariş: <span id="modalOrderNo"></span></h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-summary" id="modalSummary"></div>
+            <div class="modal-table-container">
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>ASIN</th>
+                            <th>Ürün</th>
+                            <th>Adet</th>
+                            <th>Birim ₺</th>
+                            <th>Toplam ₺</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global State
+        let allOrders = [];
+        let orderDetails = {};
+        let myCharts = {};
+
+        // Configuration
+        const BRAND_LIST = ["LIQUI MOLY", "OSRAM", "PHOTON", "BOSCH", "AYFAR", "NETEX", "KALE", "NIKEN", "DELPHI", "WINKEL", "PHILIPS", "NARVA", "HELLA", "VALEO", "FERODO", "BREMBO", "TRW", "MANN", "MAHLE", "PURFLUX", "SKF", "FAG", "INA", "NGK", "DENSO", "SEGER", "MGA", "GATES", "CONTITECH", "DAYCO"];
+
+        // Initialize dashboard
+        window.addEventListener('DOMContentLoaded', function () {
+            if (loadDataFromLocalStorage()) {
+                console.log("Data loaded from LocalStorage");
+            } else {
+                console.log("No saved data found.");
+            }
+        });
+
+        // ============ LOCAL STORAGE ============
+        function saveDataToLocalStorage(rawData) {
+            try {
+                // Save the RAW CSV data so we can re-process it perfectly
+                localStorage.setItem('dfData_raw', JSON.stringify(rawData));
+
+                // Save the date
+                const updateDate = document.getElementById('updateDate') ? document.getElementById('updateDate').innerHTML : '';
+                localStorage.setItem('dfData_date', updateDate);
+            } catch (e) {
+                console.error("Storage save error", e);
+            }
+        }
+
+        function loadDataFromLocalStorage() {
+            try {
+                const rawDataStr = localStorage.getItem('dfData_raw');
+                const savedDate = localStorage.getItem('dfData_date');
+
+                if (rawDataStr) {
+                    const rawData = JSON.parse(rawDataStr);
+                    if (rawData && rawData.length > 0) {
+                        // Process the loaded raw data, passing true to skip re-saving
+                        processData(rawData, true);
+
+                        if (savedDate && document.getElementById('updateDate')) {
+                            document.getElementById('updateDate').innerHTML = savedDate;
+                        }
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.error("Storage load error", e);
+            }
+            return false;
+        }
+
+        // File Upload Handler
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('updateDate').textContent = "Dosya İşleniyor...";
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                dynamicTyping: true,
+                complete: function (results) {
+                    if (results.data && results.data.length > 0) {
+                        try {
+                            processData(results.data);
+                            document.getElementById('updateDate').innerHTML = `${new Date().toLocaleDateString('tr-TR')} <span class="update-badge">Yüklendi</span>`;
+                        } catch (e) {
+                            console.error(e);
+                            alert("Veri işlenirken hata oluştu: " + e.message);
+                        }
+                    } else {
+                        alert("Dosya boş veya format hatalı.");
+                    }
+                },
+                error: function (err) {
+                    alert("CSV okuma hatası: " + err.message);
+                }
+            });
+        }
+
+        // Data Processing Logic
+        function processData(rawData, fromStorage = false) {
+            // If fromStorage is true, rawData is already the dataset we want to process.
+            // But processData resets allOrders. That's fine, we want to rebuild it from source.
+
+            allOrders = [];
+            orderDetails = {};
+
+            // Save raw data to storage if it's a new upload
+            if (!fromStorage) {
+                saveDataToLocalStorage(rawData);
+            }
+
+            // Temporary storage for aggregation
+            const orderMap = new Map();
+
+            rawData.forEach(row => {
+                // Normalize keys (handle potential CSV header variations)
+                const orderNo = row['purchase-order-number'] || row['Sipariş No'] || row['Order ID'] || row['Sipariş Numarası'];
+                if (!orderNo) return;
+
+                const rawDate = row['order-date'] || row['Sipariş Tarihi'] || row['Sipariş Yeri/Tarihi'];
+                const status = (row['order-status'] || row['Durum'] || row['Sipariş Durumu'] || '').toUpperCase();
+                const sku = row['sku'] || row['SKU'];
+                const product = row['product-name'] || row['Ürün Adı'] || row['Ürün Başlığı']; // 'Ürün Başlığı' is in the CSV
+
+                // Flexible quantity parsing
+                let qty = 0;
+                if (row['quantity-ordered'] !== undefined) qty = parseInt(row['quantity-ordered']);
+                else if (row['Adet'] !== undefined) qty = parseInt(row['Adet']);
+                else if (row['Ürün Miktarı'] !== undefined) qty = parseInt(row['Ürün Miktarı']);
+
+                // Flexible price parsing (handle "TRY 186,95" format)
+                let rawPrice = row['item-price'] || row['Birim Fiyat'] || row['Ürün Maliyeti'];
+                let price = 0;
+                if (rawPrice) {
+                    if (typeof rawPrice === 'number') {
+                        price = rawPrice;
+                    } else if (typeof rawPrice === 'string') {
+                        // Clean currency symbols and parse Turkish format (comma decimal)
+                        let clean = rawPrice.replace(/TRY/g, '').replace(/₺/g, '').trim();
+                        // If it has comma and dot, assume dot is thousand, comma is decimal (TR)
+                        // Or if just comma, assume decimal
+                        if (clean.includes(',')) {
+                            clean = clean.replace(/\./g, '').replace(',', '.');
+                        }
+                        price = parseFloat(clean) || 0;
+                    }
+                }
+
+                // Map Status
+                let mappedStatus = 'Beklemede';
+                if (status === 'SHIPPED' || status === 'GÖNDERILDI') mappedStatus = 'Gönderildi';
+                else if (status === 'CANCELLED' || status === 'İPTAL') mappedStatus = 'İptal Edildi';
+
+                // Date Parsing (Custom for Turkish "19 Kas 2025" or "19 Kasım 2025" format)
+                function parseTurkishDate(dateStr) {
+                    if (!dateStr) return new Date(NaN);
+                    let clean = dateStr.toString().trim();
+
+                    // Map Turkish months to English - SORTED BY LENGTH DESC to avoid partial matches (e.g. Kas in Kasım)
+                    const months = [
+                        ['Ağustos', 'Aug'], ['Haziran', 'Jun'], ['Temmuz', 'Jul'], ['Kasım', 'Nov'], ['Aralık', 'Dec'],
+                        ['Mayıs', 'May'], ['Nisan', 'Apr'], ['Şubat', 'Feb'], ['Eylül', 'Sep'], ['Ocak', 'Jan'],
+                        ['Ekim', 'Oct'], ['Mart', 'Mar'],
+                        ['Ağu', 'Aug'], ['Haz', 'Jun'], ['Tem', 'Jul'], ['Kas', 'Nov'], ['Ara', 'Dec'],
+                        ['May', 'May'], ['Nis', 'Apr'], ['Şub', 'Feb'], ['Eyl', 'Sep'], ['Oca', 'Jan'],
+                        ['Eki', 'Oct'], ['Mar', 'Mar']
+                    ];
+
+                    // Replace Turkish months (case-insensitive)
+                    for (const [tr, en] of months) {
+                        const regex = new RegExp(tr, 'i');
+                        if (regex.test(clean)) {
+                            clean = clean.replace(regex, en);
+                            // Assuming only one month name per date string
+                            break;
+                        }
+                    }
+                    return new Date(clean);
+                }
+
+                const dateObj = parseTurkishDate(rawDate);
+                const formattedDate = !isNaN(dateObj) ? dateObj.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : rawDate;
+                // Fix: ensure ISO string uses local time or handles timezone offset correct-ish, 
+                // but for daily grouping YYYY-MM-DD from ISO is fine if time is correct. 
+                // However, "19 Nov 2025" -> 00:00 local -> might be previous day in UTC.
+                // Best to force string construction from parts if we want local date.
+                const simpleDate = !isNaN(dateObj) ? (
+                    dateObj.getFullYear() + '-' +
+                    String(dateObj.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(dateObj.getDate()).padStart(2, '0')
+                ) : 'Unknown';
+
+                // Month Key for Monthly Chart (YYYY-MM)
+                const monthKey = !isNaN(dateObj) ? (
+                    dateObj.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
+                ) : 'Unknown';
+
+                // Item Detail
+                const item = {
+                    sku: sku,
+                    asin: '', // CSV often doesn't have ASIN directly unless parsed from link or extra col
+                    urun: product,
+                    adet: qty,
+                    birimFiyat: price,
+                    tutar: qty * price,
+                    durum: mappedStatus
+                };
+
+                // Add to Order Details Map (for Modal)
+                if (!orderDetails[orderNo]) orderDetails[orderNo] = [];
+                orderDetails[orderNo].push(item);
+
+                // Aggregate Order Level
+                if (!orderMap.has(orderNo)) {
+                    orderMap.set(orderNo, {
+                        siparis: orderNo,
+                        tarih: formattedDate,
+                        simpleDate: simpleDate,
+                        monthKey: monthKey,
+                        durum: mappedStatus,
+                        kalem: 0,
+                        adet: 0,
+                        tutar: 0,
+                        takip: '', // CSV might not have tracking immediately
+                        kargoTarihi: ''
+                    });
+                }
+                const order = orderMap.get(orderNo);
+                order.kalem += 1;
+                order.adet += qty;
+                order.tutar += (qty * price);
+            });
+
+            // Convert Map to Array & Sort by Date Desc
+            allOrders = Array.from(orderMap.values()).sort((a, b) => {
+                // Try parsing dates for sort
+                const da = new Date(a.tarih.split('.').reverse().join('-')); // assuming TR format dd.mm.yyyy
+                const db = new Date(b.tarih.split('.').reverse().join('-'));
+                return isNaN(da) ? 0 : db - da;
+            });
+
+            updateMetrics(allOrders, orderDetails);
+            updateCharts(allOrders, orderDetails);
+            updateTables(allOrders, orderDetails);
+        }
+
+        // Helper for Currency Formatting (e.g. ₺1.2K, ₺1.5M)
+        function formatMoney(amount) {
+            if (amount >= 1000000) return '₺' + (amount / 1000000).toFixed(2) + 'M';
+            if (amount >= 1000) return '₺' + (amount / 1000).toFixed(1) + 'K';
+            return '₺' + amount.toLocaleString('tr-TR', { maximumFractionDigits: 0 });
+        }
+
+        function updateMetrics(orders, detailsItems) {
+            const totalOrders = orders.length;
+            const shippedOrders = orders.filter(o => o.durum === 'Gönderildi');
+            const pendingOrders = orders.filter(o => o.durum === 'Beklemede');
+            const cancelledOrders = orders.filter(o => o.durum === 'İptal Edildi');
+
+            // Revenue (excluding cancelled)
+            const totalRevenue = orders.reduce((s, o) => s + (o.durum !== 'İptal Edildi' ? o.tutar : 0), 0);
+
+            // Total Units (INCLUDING CANCELLED per user request)
+            const totalUnits = orders.reduce((s, o) => s + o.adet, 0);
+
+            // Total Lines (Sum of 'kalem' count per order)
+            const totalLines = orders.reduce((s, o) => s + o.kalem, 0);
+
+            const shippedRevenue = shippedOrders.reduce((s, o) => s + o.tutar, 0);
+            const pendingRevenue = pendingOrders.reduce((s, o) => s + o.tutar, 0);
+            const cancelledRevenue = cancelledOrders.reduce((s, o) => s + o.tutar, 0);
+
+            // Unique ASIN/SKU count
+            const uniqueSkus = new Set();
+            Object.values(detailsItems).flat().forEach(i => uniqueSkus.add(i.sku));
+            const uniqueCount = uniqueSkus.size;
+
+            // 1. Toplam Sipariş
+            document.getElementById('metric-total-orders').textContent = totalOrders.toLocaleString('tr-TR');
+            const avgOrder = totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(0) : 0;
+            document.getElementById('metric-avg-order').textContent = 'Ort. ₺' + avgOrder + ' / sipariş';
+
+            // 2. Toplam Kalem
+            document.getElementById('metric-total-lines').textContent = totalLines.toLocaleString('tr-TR');
+            document.getElementById('metric-unique-asins').textContent = uniqueCount.toLocaleString('tr-TR') + ' benzersiz ASIN';
+
+            // 3. Toplam Adet
+            document.getElementById('metric-total-units').textContent = totalUnits.toLocaleString('tr-TR');
+            // Sub: Total Revenue (Valid Sales)
+            document.getElementById('metric-total-revenue').textContent = formatMoney(totalRevenue);
+
+            // 4. Gönderildi
+            document.getElementById('metric-shipped-count').textContent = shippedOrders.length.toLocaleString('tr-TR');
+            document.getElementById('metric-shipped-revenue').textContent = formatMoney(shippedRevenue);
+
+            // 5. Beklemede
+            document.getElementById('metric-pending-count').textContent = pendingOrders.length.toLocaleString('tr-TR');
+            document.getElementById('metric-pending-revenue').textContent = formatMoney(pendingRevenue);
+
+            // 6. İptal Edilen
+            document.getElementById('metric-cancelled-count').textContent = cancelledOrders.length.toLocaleString('tr-TR');
+            document.getElementById('metric-cancelled-revenue').textContent = formatMoney(cancelledRevenue);
+
+            // 7. Tamamlanma
+            const completionRate = totalOrders > 0 ? ((shippedOrders.length / totalOrders) * 100).toFixed(1) : 0;
+            document.getElementById('metric-completion-rate').textContent = '%' + completionRate;
+            document.getElementById('metric-completion-sub').textContent = 'Gönderildi / Toplam';
+        }
+
+        function detectBrand(productName) {
+            if (!productName) return "DİĞER";
+            const upper = productName.toUpperCase();
+            for (const brand of BRAND_LIST) {
+                if (upper.includes(brand)) return brand;
+            }
+            return upper.split(' ')[0]; // Fallback to first word
+        }
+
+        function updateCharts(orders, detailsItems) {
+            // 1. Daily Trend - Stacked Bars (Revenue) + Lines (Quantity)
+            const dailyMap = {};
+            // Structure: { date: { shippedRev: 0, pendingRev: 0, cancelledRev: 0, totalQty: 0, cancelledQty: 0 } }
+
+            orders.forEach(o => {
+                if (!o.simpleDate) return;
+                if (!dailyMap[o.simpleDate]) {
+                    dailyMap[o.simpleDate] = {
+                        shippedRev: 0, pendingRev: 0, cancelledRev: 0,
+                        totalQty: 0, cancelledQty: 0, pendingQty: 0, totalRev: 0
+                    };
+                }
+
+                const d = dailyMap[o.simpleDate];
+                d.totalQty += o.adet; // Total Quantity Line
+                d.totalRev += o.tutar; // Total Revenue Line (Sum of all statuses)
+
+                if (o.durum === 'Gönderildi') d.shippedRev += o.tutar;
+                else if (o.durum === 'Beklemede') {
+                    d.pendingRev += o.tutar;
+                    d.pendingQty += o.adet;
+                }
+                else if (o.durum === 'İptal Edildi') {
+                    d.cancelledRev += o.tutar;
+                    d.cancelledQty += o.adet;
+                }
+            });
+            const sortedDates = Object.keys(dailyMap).sort();
+
+            createChart('dailyChart', 'bar', {
+                labels: sortedDates.map(d => d.substring(5)), // MM-DD
+                datasets: [
+                    // Stacked Revenue Bars
+                    {
+                        label: 'Beklemede (₺)',
+                        data: sortedDates.map(d => dailyMap[d].pendingRev),
+                        backgroundColor: '#f39c12',
+                        stack: 'revenue',
+                        yAxisID: 'y',
+                        order: 3
+                    },
+                    {
+                        label: 'İptal (₺)',
+                        data: sortedDates.map(d => dailyMap[d].cancelledRev),
+                        backgroundColor: '#e74c3c',
+                        stack: 'revenue',
+                        yAxisID: 'y',
+                        order: 3
+                    },
+                    {
+                        label: 'Gönderildi (₺)',
+                        data: sortedDates.map(d => dailyMap[d].shippedRev),
+                        backgroundColor: '#2ecc71',
+                        stack: 'revenue',
+                        yAxisID: 'y',
+                        order: 3,
+                        borderRadius: 4
+                    },
+
+                    // Quantity Lines
+                    {
+                        label: 'Toplam Adet',
+                        data: sortedDates.map(d => dailyMap[d].totalQty),
+                        type: 'line',
+                        borderColor: '#3498db',
+                        backgroundColor: '#3498db',
+                        borderWidth: 2,
+                        pointRadius: 2,
+                        pointBackgroundColor: '#3498db',
+                        yAxisID: 'y1',
+                        order: 2,
+                        tension: 0.3,
+                        pointStyle: 'line'
+                    },
+                    {
+                        label: 'Beklemede Adet',
+                        data: sortedDates.map(d => dailyMap[d].pendingQty),
+                        type: 'line',
+                        borderColor: '#f39c12',
+                        backgroundColor: '#f39c12',
+                        borderWidth: 2,
+                        pointRadius: 2,
+                        pointBackgroundColor: '#f39c12',
+                        yAxisID: 'y1',
+                        order: 1, // High priority
+                        tension: 0.3,
+                        pointStyle: 'line'
+                    },
+                    {
+                        label: 'İptal Adet',
+                        data: sortedDates.map(d => dailyMap[d].cancelledQty),
+                        type: 'line',
+                        borderColor: '#e74c3c',
+                        backgroundColor: '#e74c3c',
+                        borderWidth: 2,
+                        pointRadius: 2,
+                        pointBackgroundColor: '#e74c3c',
+                        yAxisID: 'y1',
+                        order: 2,
+                        tension: 0.3,
+                        pointStyle: 'line'
+                    },
+                ]
+            }, {
+                plugins: {
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    legend: {
+                        labels: {
+                            color: '#8b9dc3',
+                            usePointStyle: true,
+                            boxWidth: 20
+                        }
+                    }
+                },
+                scales: {
+                    x: { stacked: true },
+                    y: {
+                        stacked: true,
+                        position: 'left',
+                        ticks: { color: '#00a8e8', callback: v => formatMoney(v) },
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        title: { display: true, text: 'Tutar (₺)', color: '#00a8e8' }
+                    },
+                    y1: {
+                        position: 'right',
+                        ticks: { color: '#8b9dc3' },
+                        grid: { display: false },
+                        title: { display: true, text: 'Adet', color: '#8b9dc3' }
+                    }
+                }
+            });
+
+            // 2. Status Distribution
+            const stats = { 'Gönderildi': 0, 'Beklemede': 0, 'İptal Edildi': 0 };
+            orders.forEach(o => { if (stats[o.durum] !== undefined) stats[o.durum] += o.adet; });
+
+            createChart('statusChart', 'doughnut', {
+                labels: Object.keys(stats),
+                datasets: [{
+                    data: Object.values(stats),
+                    backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'],
+                    borderWidth: 0
+                }]
+            }, { plugins: { legend: { position: 'bottom', labels: { color: '#8b9dc3' } } } });
+
+            // 3. Brands (Detailed Stats)
+            const brandStats = {};
+            Object.values(detailsItems).flat().forEach(item => {
+                const brand = detectBrand(item.urun);
+                if (!brandStats[brand]) {
+                    brandStats[brand] = { total: 0, shipped: 0, pending: 0, cancelled: 0 };
+                }
+
+                brandStats[brand].total += item.tutar;
+
+                if (item.durum === 'Gönderildi' || item.durum === 'SHIPPED') brandStats[brand].shipped += item.tutar;
+                else if (item.durum === 'Beklemede' || item.durum === 'PENDING') brandStats[brand].pending += item.tutar;
+                else if (item.durum === 'İptal Edildi' || item.durum === 'CANCELLED') brandStats[brand].cancelled += item.tutar;
+            });
+
+            const renderBrandChart = (filterKey = 'total') => {
+                // Sort by the selected filter key
+                const topBrands = Object.entries(brandStats)
+                    .sort((a, b) => b[1][filterKey] - a[1][filterKey])
+                    .slice(0, 10);
+
+                createChart('brandChart', 'bar', {
+                    labels: topBrands.map(b => b[0]),
+                    datasets: [{
+                        label: 'Tutar (₺)', // Label for tooltip
+                        data: topBrands.map(b => b[1][filterKey]),
+                        backgroundColor: topBrands.map((_, i) => `rgba(0, ${168 - i * 10}, ${232 - i * 15}, ${1 - i * 0.06})`),
+                        borderRadius: 4
+                    }]
+                }, {
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: { x: { ticks: { color: '#8b9dc3', callback: v => formatMoney(v) } } }
+                });
+            };
+
+            // Initial Render
+            renderBrandChart(document.getElementById('brandFilter').value || 'total');
+
+            // Event Listener (Re-attach safely)
+            const brandFilter = document.getElementById('brandFilter');
+            brandFilter.onchange = (e) => {
+                renderBrandChart(e.target.value);
+            };
+
+            // 4. Categories (Simplified by Keywords)
+            const catMap = { 'Aydınlatma': 0, 'Silecek': 0, 'Fren': 0, 'Filtre': 0, 'Ateşleme': 0, 'Diğer': 0 };
+            Object.values(detailsItems).flat().forEach(item => {
+                const name = (item.urun || '').toUpperCase();
+                let cat = 'Diğer';
+                if (name.includes('AMPUL') || name.includes('LED') || name.includes('XENON') || name.includes('FAR')) cat = 'Aydınlatma';
+                else if (name.includes('SİLECEK') || name.includes('SUPURGE')) cat = 'Silecek';
+                else if (name.includes('BALATA') || name.includes('DISK')) cat = 'Fren';
+                else if (name.includes('FILTRE')) cat = 'Filtre';
+                else if (name.includes('BUJI')) cat = 'Ateşleme';
+                catMap[cat] += item.tutar;
+            });
+
+            createChart('categoryChart', 'polarArea', {
+                labels: Object.keys(catMap),
+                datasets: [{
+                    data: Object.values(catMap),
+                    backgroundColor: ['rgba(0,168,232,0.8)', 'rgba(46,204,113,0.8)', 'rgba(231,76,60,0.8)', 'rgba(241,196,15,0.8)', 'rgba(155,89,182,0.8)', 'rgba(149,165,166,0.8)']
+                }]
+            }, { scales: { r: { ticks: { display: false } } } });
+
+            // 5. Monthly Performance
+            const monthMap = {};
+            orders.forEach(o => {
+                if (!monthMap[o.monthKey]) monthMap[o.monthKey] = { tutar: 0, adet: 0 };
+                // Include all or just shipped? Usually revenue implies shipped/pending, ignored cancelled
+                if (o.durum !== 'İptal Edildi') {
+                    monthMap[o.monthKey].tutar += o.tutar;
+                    monthMap[o.monthKey].adet += o.adet;
+                }
+            });
+            // Sort months? Needs custom sort logic or rely on insertion order if data is sorted. 
+            // We sorted allOrders by date, so keys *should* be roughly in order of appearance
+            const months = Object.keys(monthMap).reverse(); // Reverse for chron order if list is desc
+
+            createChart('monthlyChart', 'bar', {
+                labels: months,
+                datasets: [
+                    { label: 'Tutar', data: months.map(m => monthMap[m].tutar), backgroundColor: 'rgba(0, 168, 232, 0.85)', borderRadius: 6, yAxisID: 'y', order: 2 },
+                    { label: 'Adet', data: months.map(m => monthMap[m].adet), type: 'line', borderColor: '#f39c12', borderWidth: 2, pointRadius: 5, pointBackgroundColor: '#f39c12', yAxisID: 'y1', order: 1 }
+                ]
+            }, {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { position: 'left', ticks: { color: '#00a8e8', callback: v => formatMoney(v) } },
+                    y1: { position: 'right', ticks: { color: '#f39c12' }, grid: { display: false } }
+                }
+            });
+        }
+
+        function createChart(id, type, data, extraOptions = {}) {
+            if (myCharts[id]) myCharts[id].destroy();
+            const ctx = document.getElementById(id).getContext('2d');
+
+            const defaultOptions = {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#8b9dc3' } } },
+                scales: extraOptions.scales || {}
+            };
+
+            // Merge options carefully
+            const options = { ...defaultOptions, ...extraOptions };
+            if (extraOptions.plugins) options.plugins = { ...defaultOptions.plugins, ...extraOptions.plugins };
+            if (extraOptions.indexAxis) options.indexAxis = extraOptions.indexAxis;
+
+            myCharts[id] = new Chart(ctx, { type, data, options });
+        }
+
+        function updateTables(orders, detailsItems) {
+            // Main Orders Table
+            document.getElementById('ordersTableBody').innerHTML = orders.slice(0, 200).map(o => `<tr>
+                <td><span class="order-link" onclick="openModal('${o.siparis}')">${o.siparis}</span></td>
+                <td>${o.tarih}</td>
+                <td>${o.kalem}</td>
+                <td><strong>${o.adet}</strong></td>
+                <td>₺${o.tutar.toLocaleString('tr-TR')}</td>
+                <td><span class="status-badge ${o.durum === 'Gönderildi' ? 'status-shipped' : (o.durum === 'İptal Edildi' ? 'status-cancelled' : 'status-pending')}">${o.durum}</span></td>
+                <td style="font-size:10px">${o.takip || '-'}</td>
+                <td>${o.kargoTarihi || '-'}</td>
+            </tr>`).join('');
+
+            // Cancelled Table (New logic)
+            const cancelled = orders.filter(o => o.durum === 'İptal Edildi').slice(0, 50);
+            document.getElementById('cancelledOrdersBody').innerHTML = cancelled.map(o => {
+                // Get first item name for display
+                const firstItem = detailsItems[o.siparis] ? detailsItems[o.siparis][0].urun : 'Bilinmeyen Ürün';
+                const truncatedName = firstItem.length > 40 ? firstItem.substring(0, 40) + '...' : firstItem;
+                return `<tr>
+                    <td>${o.tarih.split(' ')[0]}</td>
+                    <td><span class="order-link" onclick="openModal('${o.siparis}')">${o.siparis}</span></td>
+                    <td style="font-size:11px; color:#8b9dc3">${truncatedName}</td>
+                    <td style="color:#e74c3c; font-weight:bold">₺${o.tutar.toLocaleString('tr-TR')}</td>
+                </tr>`;
+            }).join('');
+
+            // Top Products with Filtering
+            const productStats = {};
+            Object.values(detailsItems).flat().forEach(item => {
+                if (!productStats[item.sku]) {
+                    productStats[item.sku] = {
+                        sku: item.sku,
+                        urun: item.urun,
+                        total: { amount: 0, qty: 0 },
+                        shipped: { amount: 0, qty: 0 },
+                        pending: { amount: 0, qty: 0 },
+                        cancelled: { amount: 0, qty: 0 }
+                    };
+                }
+                const p = productStats[item.sku];
+                p.total.amount += item.tutar;
+                p.total.qty += item.adet;
+
+                if (item.durum === 'Gönderildi' || item.durum === 'SHIPPED') {
+                    p.shipped.amount += item.tutar;
+                    p.shipped.qty += item.adet;
+                } else if (item.durum === 'Beklemede' || item.durum === 'PENDING') {
+                    p.pending.amount += item.tutar;
+                    p.pending.qty += item.adet;
+                } else if (item.durum === 'İptal Edildi' || item.durum === 'CANCELLED') {
+                    p.cancelled.amount += item.tutar;
+                    p.cancelled.qty += item.adet;
+                }
+            });
+
+            window.productStats = productStats; // Store globally for filter access
+
+            const renderTopProducts = (filterKey = 'total') => {
+                const tbody = document.getElementById('topProductsBody');
+                if (!tbody) return;
+
+                const sorted = Object.values(window.productStats)
+                    .sort((a, b) => b[filterKey].amount - a[filterKey].amount)
+                    .slice(0, 40);
+
+                tbody.innerHTML = sorted.map((p, i) => `<tr>
+                    <td>${i + 1}</td>
+                    <td class="sku-cell">${p.sku}</td>
+                    <td class="truncate" title="${p.urun}">${p.urun.length > 50 ? p.urun.substring(0, 50) + '...' : p.urun}</td>
+                    <td><strong>${p[filterKey].qty}</strong></td>
+                    <td class="price">₺${p[filterKey].amount.toLocaleString('tr-TR')}</td>
+                </tr>`).join('');
+            };
+
+            // Initial Render
+            const filterVal = document.getElementById('topProductsFilter').value || 'total';
+            renderTopProducts(filterVal);
+
+            // Re-attach event listener
+            document.getElementById('topProductsFilter').onchange = (e) => {
+                renderTopProducts(e.target.value);
+            };
+        }
+
+        // Modal Functions
+        function openModal(orderNo) {
+            const items = orderDetails[orderNo];
+            if (!items) return;
+            document.getElementById('modalOrderNo').textContent = orderNo;
+            const t = items.reduce((a, i) => ({ adet: a.adet + i.adet, tutar: a.tutar + i.tutar }), { adet: 0, tutar: 0 });
+            document.getElementById('modalSummary').innerHTML = `
+                <div class="modal-stat"><div class="stat-label">Kalem Sayısı</div><div class="stat-value">${items.length}</div></div>
+                <div class="modal-stat"><div class="stat-label">Toplam Adet</div><div class="stat-value">${t.adet}</div></div>
+                <div class="modal-stat"><div class="stat-label">Toplam Tutar</div><div class="stat-value">₺${t.tutar.toLocaleString('tr-TR')}</div></div>`;
+            document.getElementById('modalTableBody').innerHTML = items.map(i => `<tr>
+                <td class="sku-cell">${i.sku}</td>
+                <td style="font-size:10px;color:#8b9dc3">${i.asin}</td>
+                <td>${i.urun}</td>
+                <td>${i.adet}</td>
+                <td>₺${i.birimFiyat.toLocaleString('tr-TR')}</td>
+                <td><strong>₺${i.tutar.toLocaleString('tr-TR')}</strong></td>
+            </tr>`).join('');
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+        function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+        document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target.id === 'modalOverlay') closeModal(); });
+    </script>
+</body>
+
+</html>
