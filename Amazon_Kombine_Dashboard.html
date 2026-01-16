@@ -975,7 +975,9 @@
                 }
 
                 if (!products[key].marka) products[key].marka = detectBrand(item.urun || item['Ürün Adı']);
-                if (!products[key].kategori) products[key].kategori = item.kategori || item['Kategori'] || 'Diğer';
+                if (!products[key].kategori || products[key].kategori === 'Diğer') {
+                    products[key].kategori = item.kategori || item['Kategori'] || detectCategory(item.urun || item['Ürün Adı']);
+                }
             });
 
             // --- DF PROCESS ---
