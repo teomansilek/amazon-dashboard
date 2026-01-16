@@ -749,8 +749,9 @@
                         // saveDataToLocalStorage(data); 
                         // But usually for "default" view we might just show it.
                         // Let's NOT save to localStorage to avoid filling user's quota with default data
+                        // But processData(data, false) WILL save it now. That is acceptable.
 
-                        document.getElementById('updateDate').innerHTML = "Varsayılan Veri Yüklendi";
+                        // document.getElementById('updateDate').innerHTML = "Varsayılan Veri Yüklendi";
                     })
                     .catch(err => {
                         console.log("Could not load default data:", err);
@@ -801,7 +802,7 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            document.getElementById('updateDate').textContent = "Dosya İşleniyor...";
+            // document.getElementById('updateDate').textContent = "Dosya İşleniyor..."; // Removed as requested
 
             Papa.parse(file, {
                 header: true,
@@ -839,6 +840,11 @@
 
             // Save raw data to storage if it's a new upload
             if (!fromStorage) {
+                const dateStr = new Date().toLocaleDateString('tr-TR');
+                const updateDateEl = document.getElementById('updateDate');
+                if (updateDateEl) {
+                    updateDateEl.innerHTML = `${dateStr} <span class="update-badge">Yüklendi</span>`;
+                }
                 saveDataToLocalStorage(rawData);
             }
 

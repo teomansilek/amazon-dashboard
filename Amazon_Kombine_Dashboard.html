@@ -838,6 +838,9 @@
                     return str.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
                 };
 
+                const fbaPoRaw = localStorage.getItem('fbaData_poDetails');
+                const dfRaw = localStorage.getItem('dfData_raw');
+
                 const fbaDate = cleanDate(localStorage.getItem('fbaData_date'));
                 const dfDate = cleanDate(localStorage.getItem('dfData_date'));
 
