@@ -994,6 +994,12 @@
             updateMetrics(allOrders, orderDetails);
             updateCharts(allOrders, orderDetails);
             updateTables(allOrders, orderDetails);
+
+            // Save to localStorage if this is a new file upload (not loading from storage)
+            if (!fromStorage) {
+                saveDataToLocalStorage(rawData);
+                console.log("Data saved to localStorage");
+            }
         }
 
         // Helper for Currency Formatting (e.g. ₺1.2K, ₺1.5M)
