@@ -447,6 +447,35 @@
             box-shadow: 0 4px 12px rgba(139, 92, 246, 0.5);
         }
 
+        .export-btn {
+            background: linear-gradient(145deg, #059669, #10b981);
+            border: none;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+
+        .export-btn:hover {
+            background: linear-gradient(145deg, #10b981, #059669);
+            transform: translateY(-1px);
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .table-header h3 {
+            margin: 0;
+        }
+
 
         .update-info {
             font-size: 12px;
@@ -650,7 +679,11 @@
 
         <!-- Top Products Table -->
         <div class="table-card">
-            <h3>🔥 Top 40 Ürün</h3>
+            <div class="table-header">
+                <h3>🔥 Top 40 Ürün</h3>
+                <button class="export-btn" onclick="exportTableById('topProductsBody', 'FBA_Top_Urunler')">📥
+                    Excel</button>
+            </div>
             <div class="table-scroll">
                 <table class="orders-table">
                     <thead>
@@ -671,7 +704,10 @@
 
         <!-- Loss Table -->
         <div class="table-card">
-            <h3 class="loss">📉 Kayıp Satış (Top 40) <span class="loss-badge">6.636 adet</span></h3>
+            <div class="table-header">
+                <h3 class="loss">📉 Kayıp Satış (Top 40) <span class="loss-badge">6.636 adet</span></h3>
+                <button class="export-btn" onclick="exportTableById('kayipBody', 'FBA_Kayip_Satis')">📥 Excel</button>
+            </div>
             <div class="table-scroll">
                 <table class="orders-table">
                     <thead>
@@ -692,7 +728,10 @@
         </div>
 
         <div class="table-card">
-            <h3 id="ordersHeader">📋 Siparişler (109)</h3>
+            <div class="table-header">
+                <h3 id="ordersHeader">📋 Siparişler (109)</h3>
+                <button class="export-btn" onclick="exportTableById('ordersBody', 'FBA_Siparisler')">📥 Excel</button>
+            </div>
             <div class="table-scroll-large">
                 <table class="orders-table">
                     <thead>
@@ -810,6 +849,45 @@
                     updateDashboardUI();
                 }
             }
+        }
+
+        // ============ EXCEL EXPORT ============
+        function exportTableById(tbodyId, filename) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return alert('Tablo bulunamadı: ' + tbodyId);
+            const table = tbody.closest('table');
+            if (!table) return alert('Tablo yapısı bulunamadı.');
+
+            // Extract headers
+            const headers = [];
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push('"' + th.textContent.replace(/"/g, '""') + '"');
+            });
+
+            // Extract rows
+            const rows = [];
+            rows.push(headers.join(';'));
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const row = [];
+                tr.querySelectorAll('td').forEach(td => {
+                    let val = td.textContent.trim().replace(/"/g, '""');
+                    row.push('"' + val + '"');
+                });
+                rows.push(row.join(';'));
+            });
+
+            // Create CSV and download (semicolon for Turkish Excel)
+            const csvContent = '\uFEFF' + rows.join('\n'); // BOM for UTF-8
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename + '_' + new Date().toLocaleDateString('tr-TR').replace(/\./g, '-') + '.csv');
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         // ============ LOCAL STORAGE ============

@@ -57,6 +57,35 @@
             text-decoration: none;
         }
 
+        .export-btn {
+            background: linear-gradient(145deg, #059669, #10b981);
+            border: none;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+
+        .export-btn:hover {
+            background: linear-gradient(145deg, #10b981, #059669);
+            transform: translateY(-1px);
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .table-header h3 {
+            margin: 0;
+        }
+
         .header h1 {
             color: #fff;
             font-size: 24px;
@@ -733,7 +762,10 @@
 
         <!-- TOP ÜRÜNLER -->
         <div class="table-card">
-            <h3>🔥 En Çok Talep Gören Ürünler (Top 50)</h3>
+            <div class="table-header">
+                <h3>🔥 En Çok Talep Gören Ürünler (Top 50)</h3>
+                <button class="export-btn" onclick="exportTableToExcel()">📥 Excel Olarak İndir</button>
+            </div>
             <div class="tab-buttons">
                 <button class="tab-btn active" onclick="showTab('adet')">Adet Bazlı</button>
                 <button class="tab-btn" onclick="showTab('tutar')">Tutar Bazlı</button>
@@ -1242,6 +1274,45 @@
                 <td class="df-color">${formatMoney(p.dfTutar)}</td>
                 <td style="color:#2ecc71;font-weight:bold">${p.toplamAdet} / ${formatMoney(p.toplamTutar)}</td>
             </tr>`).join('');
+        }
+
+        function exportTableToExcel() {
+            // Find active tab's table
+            const activeTab = document.querySelector('.tab-content.active');
+            if (!activeTab) return alert('Aktif tablo bulunamadı.');
+            const table = activeTab.querySelector('table');
+            if (!table) return alert('Tablo bulunamadı.');
+
+            // Extract headers
+            const headers = [];
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push('"' + th.textContent.replace(/"/g, '""') + '"');
+            });
+
+            // Extract rows
+            const rows = [];
+            rows.push(headers.join(';'));
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const row = [];
+                tr.querySelectorAll('td').forEach(td => {
+                    let val = td.textContent.trim().replace(/"/g, '""');
+                    row.push('"' + val + '"');
+                });
+                rows.push(row.join(';'));
+            });
+
+            // Create CSV and download (semicolon for Turkish Excel)
+            const csvContent = '\uFEFF' + rows.join('\n'); // BOM for UTF-8
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'Kombine_Dashboard_Export_' + new Date().toLocaleDateString('tr-TR').replace(/\./g, '-') + '.csv');
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         // --- CHARTS ---

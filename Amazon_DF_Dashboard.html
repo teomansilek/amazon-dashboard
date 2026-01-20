@@ -77,6 +77,35 @@
             border-color: #a78bfa;
         }
 
+        .export-btn {
+            background: linear-gradient(145deg, #059669, #10b981);
+            border: none;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+
+        .export-btn:hover {
+            background: linear-gradient(145deg, #10b981, #059669);
+            transform: translateY(-1px);
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .table-header h3 {
+            margin: 0;
+        }
+
         .container {
             max-width: 1600px;
             margin: 0 auto;
@@ -651,8 +680,10 @@
             </div>
 
             <div class="chart-card">
-                <div class="chart-header">
+                <div class="chart-header table-header">
                     <h3>🔥 En Çok Satan Ürünler (Top 40)</h3>
+                    <button class="export-btn" onclick="exportTableById('topProductsBody', 'DF_Top_Urunler')">📥
+                        Excel</button>
                     <select id="topProductsFilter" class="chart-filter">
                         <option value="total">Toplam Sipariş Tutarı</option>
                         <option value="shipped">Gönderilen Tutar</option>
@@ -681,9 +712,13 @@
 
         <!-- SİPARİŞ LİSTESİ -->
         <div class="table-card">
-            <h3>📋 Son Siparişler (200) <small
-                    style="font-size:12px;color:#8b9dc3;font-weight:normal;margin-left:10px">💡 Sipariş numarasına
-                    tıklayarak detay</small></h3>
+            <div class="table-header">
+                <h3>📋 Son Siparişler (200) <small
+                        style="font-size:12px;color:#8b9dc3;font-weight:normal;margin-left:10px">💡 Sipariş numarasına
+                        tıklayarak detay</small></h3>
+                <button class="export-btn" onclick="exportTableById('ordersTableBody', 'DF_Siparisler')">📥
+                    Excel</button>
+            </div>
             <div class="table-scroll">
                 <table class="orders-table">
                     <thead>
@@ -809,6 +844,45 @@
                 console.error("Storage load error", e);
             }
             return false;
+        }
+
+        // ============ EXCEL EXPORT ============
+        function exportTableById(tbodyId, filename) {
+            const tbody = document.getElementById(tbodyId);
+            if (!tbody) return alert('Tablo bulunamadı: ' + tbodyId);
+            const table = tbody.closest('table');
+            if (!table) return alert('Tablo yapısı bulunamadı.');
+
+            // Extract headers
+            const headers = [];
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push('"' + th.textContent.replace(/"/g, '""') + '"');
+            });
+
+            // Extract rows
+            const rows = [];
+            rows.push(headers.join(';'));
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const row = [];
+                tr.querySelectorAll('td').forEach(td => {
+                    let val = td.textContent.trim().replace(/"/g, '""');
+                    row.push('"' + val + '"');
+                });
+                rows.push(row.join(';'));
+            });
+
+            // Create CSV and download (semicolon for Turkish Excel)
+            const csvContent = '\uFEFF' + rows.join('\n'); // BOM for UTF-8
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename + '_' + new Date().toLocaleDateString('tr-TR').replace(/\./g, '-') + '.csv');
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
         // File Upload Handler
