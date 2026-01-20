@@ -839,7 +839,7 @@
 
         // Formatters
         function formatNum(n) { return n ? n.toLocaleString('tr-TR') : '0'; }
-        function formatMoney(n) { if (!n) return '₺0'; return '₺' + (n >= 1000000 ? (n / 1000000).toFixed(2).replace('.', ',') + 'M' : n.toLocaleString('tr-TR')); }
+        function formatMoney(n) { if (!n) return '₺0'; return '₺' + (n / 1000000).toFixed(2).replace('.', ',') + 'M'; }
         function parseMoney(str) {
             if (typeof str === 'number') return str;
             if (!str) return 0;
