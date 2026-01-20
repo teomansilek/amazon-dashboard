@@ -964,7 +964,7 @@
                     qty = p_alinan;
                     rev = qty * p_birim;
                 } else if (mode === 'kayip') {
-                    qty = Math.max(0, p_talep - p_kabul);
+                    qty = Math.max(0, p_talep - p_alinan);
                     rev = qty * p_birim;
                 }
 
@@ -1137,8 +1137,8 @@
 
             const modeLabels = {
                 talep: '📦 FBA Talep Edilen + DF Siparişler',
-                alinan: '✅ FBA Kabul Edilen + DF Gönderilen',
-                kayip: '⚠️ FBA Kayıp (Talep-Kabul) + DF İptal'
+                alinan: '✅ FBA Alınan + DF Gönderilen',
+                kayip: '⚠️ FBA Kayıp (Talep-Alınan) + DF İptal'
             };
             document.getElementById('modeIndicator').textContent = modeLabels[currentMode];
 
