@@ -1166,6 +1166,21 @@
             });
         }
 
+        // Depo kodu -> Lokasyon ismi eşleştirmesi
+        const DEPO_LOCATIONS = {
+            'IST2': 'IST2 - Tuzla',
+            'XSA9': 'XSA9 - Gebze (Yeni)',
+            'XSA8': 'XSA8 - Ankara Netlog',
+            'XTRD': 'XTRD - Kahramankazan',
+            'XTRA': 'XTRA - Gebze (Eski)'
+        };
+
+        function getDepoDisplayName(depoCode) {
+            // Eğer zaten uzun formattaysa (örn: "IST2 - İstanbul Depo 2"), kodu çıkar ve yeni lokasyonu ekle
+            const code = depoCode.split(' ')[0].split('-')[0].trim();
+            return DEPO_LOCATIONS[code] || depoCode;
+        }
+
         function updateDepoChart() {
             const selector = document.getElementById('depoSelect').value;
             const warehouseData = currentFbaData.warehouse;
@@ -1183,7 +1198,7 @@
             charts.warehouse = new Chart(document.getElementById('warehouseChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: warehouseData.map(d => d['Gönderilme yeri']),
+                    labels: warehouseData.map(d => getDepoDisplayName(d['Gönderilme yeri'])),
                     datasets: [{
                         data: warehouseData.map(d => d[dataField]),
                         backgroundColor: [
