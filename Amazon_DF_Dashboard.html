@@ -1374,9 +1374,16 @@
                     monthMap[o.monthKey].adet += o.adet;
                 }
             });
-            // Sort months? Needs custom sort logic or rely on insertion order if data is sorted. 
-            // We sorted allOrders by date, so keys *should* be roughly in order of appearance
-            const months = Object.keys(monthMap).reverse(); // Reverse for chron order if list is desc
+            // Sort months chronologically using Turkish month order
+            const turkishMonthOrder = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+            const months = Object.keys(monthMap).sort((a, b) => {
+                // Parse "Kasım 2025" or "Şubat 2026" format
+                const [monthA, yearA] = a.split(' ');
+                const [monthB, yearB] = b.split(' ');
+                const yearDiff = parseInt(yearA) - parseInt(yearB);
+                if (yearDiff !== 0) return yearDiff;
+                return turkishMonthOrder.indexOf(monthA) - turkishMonthOrder.indexOf(monthB);
+            });
 
             createChart('monthlyChart', 'bar', {
                 labels: months,
